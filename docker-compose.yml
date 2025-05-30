@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  sf-business-model:
+    build: .
+    container_name: sf-business-model-app
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env.docker
+    volumes:
+      - ./processed:/app/processed
+      - ./models:/app/models
+      - ./raw_data:/app/raw_data
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped
+
+  # Pipeline-only service for running just the data pipeline
+  pipeline:
+    build: .
+    container_name: sf-business-model-pipeline
+    env_file:
+      - .env.docker
+    environment:
+      - PIPELINE_ONLY=true
+      - PYTHONPATH=/app
+    volumes:
+      - ./processed:/app/processed
+      - ./models:/app/models
+      - ./raw_data:/app/raw_data
+    profiles:
+      - pipeline
