@@ -1,0 +1,4 @@
+business_dim: 32
+dropout_rate: 0.3
+spatial_dim: 8
+temporal_dim: 10
