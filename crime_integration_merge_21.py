@@ -1,7 +1,3 @@
-# crime_integration_pipeline_21.py
-# Crime Data Integration Pipeline
-# Integrates business success data with crime statistics
-
 import os
 import pandas as pd
 import numpy as np
@@ -24,14 +20,14 @@ def setup_logging_and_directories():
     # Configure paths for local MacBook structure
     base_dir = os.getenv("BASE_DIR", "/app/San_Francisco_Business_Model")
     # base_dir = Path("/Users/baboo/Documents/San Francisco Business Model")
-    processed_dir = base_dir / "processed"
-    final_dir = processed_dir / "final"
-    crime_dir = processed_dir / "crime"
+    processed_dir = os.path.join(base_dir, "processed")
+    final_dir = os.path.join(processed_dir, "final")
+    crime_dir = os.path.join(processed_dir, "crime")
 
     # Define file paths - keeping same file names
-    business_df_path = final_dir / "sf_business_success_with_311.parquet"
-    crime_df_path = crime_dir / "sf_crime.parquet"
-    output_path = final_dir / "sf_business_success_with_crime.parquet"
+    business_df_path = os.path.join(final_dir, "sf_business_success_with_311.parquet")
+    crime_df_path = os.path.join(crime_dir, "sf_crime.parquet")
+    output_path = os.path.join(final_dir, "sf_business_success_with_crime.parquet")
 
     # Set pandas display options
     pd.set_option("display.max_columns", None)
@@ -402,7 +398,9 @@ def save_merged_dataset(df_merged, output_path, base_dir, logger):
         logger.error(f"Error saving merged dataframe: {e}")
         print(f"❌ Error saving merged dataframe: {e}")
         # Try alternate path in base directory
-        alternate_path = base_dir / "sf_business_success_with_crime.parquet"
+        alternate_path = os.path.join(
+            base_dir, "sf_business_success_with_crime.parquet"
+        )
         df_merged.to_parquet(alternate_path)
         logger.info(f"Merged dataframe saved to alternate path: {alternate_path}")
         print(f"✅ Merged dataframe saved to alternate path: {alternate_path}")

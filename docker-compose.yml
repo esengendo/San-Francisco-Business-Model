@@ -1,33 +1,42 @@
-version: '3.8'
 
 services:
   sf-business-model:
     build: .
     container_name: sf-business-model-app
-    ports:
-      - "8501:8501"
     env_file:
       - .env.docker
     volumes:
-      - ./processed:/app/processed
+      # Mount volumes to persist data and results
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./logs:/app/logs
       - ./models:/app/models
+      - ./processed:/app/processed
       - ./raw_data:/app/raw_data
+      - ./archive:/app/archive
+    
+    # REMOVED: restart: unless-stopped  # This was causing continuous runs
+    
+    # Override the default CMD to run once and exit cleanly
+    command: python pipeline_runner.py
+    
     environment:
-      - PYTHONPATH=/app
-    restart: unless-stopped
+      # Ensure single run mode
+      - PIPELINE_MODE=single_run
+      - LOG_LEVEL=INFO
+      - BASE_DIR=/app
+      
+    # Optional: Add resource limits to prevent system overload
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
 
-  # Pipeline-only service for running just the data pipeline
-  pipeline:
-    build: .
-    container_name: sf-business-model-pipeline
-    env_file:
-      - .env.docker
-    environment:
-      - PIPELINE_ONLY=true
-      - PYTHONPATH=/app
-    volumes:
-      - ./processed:/app/processed
-      - ./models:/app/models
-      - ./raw_data:/app/raw_data
-    profiles:
-      - pipeline
+# Optional: Add a network for future scaling
+networks:
+  default:
+    name: sf-business-network

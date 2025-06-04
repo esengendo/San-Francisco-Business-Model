@@ -1,7 +1,3 @@
-# model_training_with_save_load_25.py
-# Business Survival Model Training Pipeline - COMPLETE VERSION WITH MODEL SAVING
-# Loads preprocessed data from processed/final/ directory and saves comprehensive model artifacts
-
 import os
 import pandas as pd
 import numpy as np
@@ -41,7 +37,7 @@ def setup_logging_and_directories():
 
     # Set base directory and paths
     base_dir = os.getenv("BASE_DIR", "/app/San_Francisco_Business_Model")
-    #base_dir = "/Users/baboo/Documents/San Francisco Business Model"
+    # base_dir = "/Users/baboo/Documents/San Francisco Business Model"
     raw_data_dir = f"{base_dir}/raw_data"
     processed_dir = f"{base_dir}/processed"
     model_dir = f"{base_dir}/models"

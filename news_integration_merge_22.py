@@ -1,6 +1,3 @@
-# news_integration_pipeline_22.py
-# News Data Integration Pipeline
-# Integrates business success data with news sentiment analysis
 import os
 import pandas as pd
 import numpy as np
@@ -25,12 +22,11 @@ def setup_logging_and_directories():
     )
     logger = logging.getLogger("SFBusinessPipeline")
 
-    # Configure paths for local MacBook structure
     # base_dir = Path("/Users/baboo/Documents/San Francisco Business Model")
     base_dir = os.getenv("BASE_DIR", "/app/San_Francisco_Business_Model")
-    processed_dir = base_dir / "processed"
-    final_dir = processed_dir / "final"
-    news_dir = processed_dir / "news"
+    processed_dir = os.path.join(base_dir, "processed")
+    final_dir = os.path.join(processed_dir, "final")
+    news_dir = os.path.join(processed_dir, "news")
 
     # Set pandas display options
     pd.set_option("display.max_columns", None)
@@ -56,8 +52,10 @@ def load_datasets(final_dir, news_dir, logger):
     print("🔄 Loading datasets...")
 
     # Load the dataframes - keeping same input/output file names
-    business_df = pd.read_parquet(final_dir / "sf_business_success_with_crime.parquet")
-    news_df = pd.read_parquet(news_dir / "sf_news_combined.parquet")
+    business_df = pd.read_parquet(
+        os.path.join(final_dir, "sf_business_success_with_crime.parquet")
+    )
+    news_df = pd.read_parquet(os.path.join(news_dir, "sf_news_combined.parquet"))
 
     logger.info(f"Business data shape: {business_df.shape}")
     logger.info(f"News data shape: {news_df.shape}")
@@ -554,7 +552,7 @@ def save_merged_dataset(final_merged_df, final_dir, base_dir, logger):
     logger.info("Saving merged dataset...")
 
     # Save the merged dataframe - keeping same output filename
-    output_path = final_dir / "sf_business_with_news.parquet"
+    output_path = os.path.join(final_dir, "sf_business_with_news.parquet")
     print(f"\n💾 Saving merged dataset...")
     try:
         final_merged_df.to_parquet(output_path)
@@ -566,7 +564,7 @@ def save_merged_dataset(final_merged_df, final_dir, base_dir, logger):
         logger.error(f"Error saving to primary location: {e}")
         print(f"❌ Error saving to primary location: {e}")
         # Try alternate path
-        alternate_path = base_dir / "sf_business_with_news.parquet"
+        alternate_path = os.path.join(base_dir, "sf_business_with_news.parquet")
         final_merged_df.to_parquet(alternate_path)
         logger.info(f"Saved to alternate location: {alternate_path}")
         print(f"✅ Saved to alternate location: {alternate_path}")

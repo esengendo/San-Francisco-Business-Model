@@ -4,10 +4,16 @@ import logging
 import pandas as pd
 import sodapy
 from datetime import datetime, timedelta
-from helper_functions_03 import save_to_parquet
+import sys
 
-# Setup logging
-logger = logging.getLogger(__name__)
+# Add project root to path if running directly
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+
+# Import unified config - same functions as your _02 script
+from config import setup_logging, setup_directories
+from helper_functions_03 import save_to_parquet
 
 
 def fetch_sf_crime_data(raw_data_dir, processed_dir, start_date, end_date):
@@ -31,6 +37,8 @@ def fetch_sf_crime_data(raw_data_dir, processed_dir, start_date, end_date):
     pd.DataFrame
         DataFrame containing processed crime data
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf_crime_data_08")
     logger.info("Fetching SF Crime Data...")
 
     # Initialize Socrata client for SF Open Data
@@ -157,11 +165,16 @@ def fetch_sf_crime_data(raw_data_dir, processed_dir, start_date, end_date):
 
 
 if __name__ == "__main__":
-    # San Francisco Crime Data API - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
+    # Use unified config - same functions as your _02 script
     logger = setup_logging()
     config = setup_directories()
+    
+    logger.info("Starting SF Crime data collection")
+    logger.info(f"Base directory: {config['base_dir']}")
+    
+    # Create directories if they don't exist - same pattern as your _02 script
+    os.makedirs(f"{config['raw_data_dir']}/crime", exist_ok=True)
+    os.makedirs(f"{config['processed_dir']}/crime", exist_ok=True)
 
     # Execute the function
     try:

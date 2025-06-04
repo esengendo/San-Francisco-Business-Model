@@ -5,6 +5,7 @@ import pickle
 import logging
 import pandas as pd
 import requests
+import sys
 import feedparser
 import threading
 import gc
@@ -12,11 +13,65 @@ from datetime import datetime, timedelta
 from tqdm import tqdm
 from urllib.parse import urljoin
 import psutil
-from helper_functions_03 import save_to_parquet
 
+# Add project root to path if running directly
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+
+# Import unified config - same functions as your _02 script
+from config import setup_logging, setup_directories
 # Setup logging
-logger = logging.getLogger(__name__)
+def setup_logging():
+    """Setup logging configuration"""
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler('wayback_collection.log')
+        ]
+    )
+    return logging.getLogger(__name__)
 
+
+
+def save_to_parquet(df, directory, filename):
+    """Save DataFrame to Parquet format with appropriate schema"""
+    try:
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+    except ImportError:
+        # Fallback to pandas parquet if pyarrow not available
+        logging.warning("PyArrow not available, using pandas parquet engine")
+        df.to_parquet(f"{directory}/{filename}.parquet", index=False)
+        return f"{directory}/{filename}.parquet"
+
+    # Ensure directory exists
+    os.makedirs(directory, exist_ok=True)
+
+    full_path = f"{directory}/{filename}.parquet"
+
+    try:
+        # Ensure all string columns are properly encoded
+        for col in df.select_dtypes(include=['object']).columns:
+            df[col] = df[col].astype('str')
+
+        # Convert to PyArrow table and write to Parquet
+        table = pa.Table.from_pandas(df)
+        pq.write_table(table, full_path, compression='snappy')
+
+        logger.info(f"Saved to {full_path}")
+        return full_path
+    except Exception as e:
+        logger.error(f"Error saving with PyArrow: {e}")
+        # Fallback to pandas
+        df.to_parquet(full_path, index=False)
+        logger.info(f"Saved to {full_path} using pandas")
+        return full_path
+
+# Initialize logger
+logger = setup_logging()
 
 def save_progress(data, filepath, archive_dir):
     """Save progress data with backup"""
@@ -42,7 +97,6 @@ def save_progress(data, filepath, archive_dir):
         logger.error(f"Error saving progress: {e}")
         return False
 
-
 def auto_save_thread(stop_event, save_data_func, interval=300):
     """Thread function to auto-save progress periodically"""
     while not stop_event.is_set():
@@ -57,7 +111,6 @@ def auto_save_thread(stop_event, save_data_func, interval=300):
             if stop_event.is_set():
                 break
             time.sleep(1)
-
 
 def get_wayback_snapshots(url, from_year, to_year):
     """
@@ -110,7 +163,6 @@ def get_wayback_snapshots(url, from_year, to_year):
         logger.error(f"Error fetching snapshots from Wayback Machine: {e}")
         return []
 
-
 def construct_archived_url(snapshot):
     """
     Construct the full Wayback Machine URL from a snapshot tuple
@@ -127,7 +179,6 @@ def construct_archived_url(snapshot):
     """
     timestamp, original_url = snapshot
     return f"http://web.archive.org/web/{timestamp}/{original_url}"
-
 
 def fetch_archived_rss(archived_url):
     """
@@ -170,7 +221,6 @@ def fetch_archived_rss(archived_url):
         logger.error(f"Unexpected error fetching {archived_url}: {e}")
         return None
 
-
 def deduplicate_articles(articles):
     """
     Remove duplicate articles based on title and link
@@ -203,7 +253,6 @@ def deduplicate_articles(articles):
         f"Deduplicated {len(articles)} articles to {len(unique_articles)} unique articles"
     )
     return unique_articles
-
 
 def collect_rss_data(
     rss_url,
@@ -463,7 +512,6 @@ def collect_rss_data(
 
     return df_articles
 
-
 def check_system_resources():
     """
     Check system resources and estimate remaining capacity.
@@ -482,7 +530,6 @@ def check_system_resources():
     except Exception as e:
         logger.warning(f"Error checking system resources: {e}")
         return 50, 100  # Conservative defaults
-
 
 def estimate_collection_time(
     date_ranges, snapshots_per_year=150, seconds_per_batch=240, batch_size=10
@@ -517,7 +564,6 @@ def estimate_collection_time(
     total_hours = total_seconds / 3600
 
     return total_hours
-
 
 def resume_collection(
     from_year, to_year, news_raw_dir, archive_dir, rss_url=None, max_snapshots=None
@@ -575,7 +621,6 @@ def resume_collection(
         resume_file=progress_file,
         max_snapshots=max_snapshots,
     )
-
 
 def smart_collect_data(
     date_ranges,
@@ -702,7 +747,6 @@ def smart_collect_data(
 
     return all_df
 
-
 def test_collection(news_raw_dir, archive_dir, test_snapshots=5):
     """
     Run a small test collection to verify the system works
@@ -747,31 +791,22 @@ def test_collection(news_raw_dir, archive_dir, test_snapshots=5):
         logger.warning("Test collection failed - no articles collected")
         return pd.DataFrame()
 
-
-def main_wayback_collection(
-    raw_data_dir, processed_dir, archive_dir, test_mode=False, test_snapshots=5
-):
+def main_wayback_collection(test_mode=True, test_snapshots=5):
     """
-    Main execution function for Wayback Machine historical data collection
-
-    Parameters:
-    -----------
-    raw_data_dir : str
-        Directory for raw data
-    processed_dir : str
-        Directory for processed data
-    archive_dir : str
-        Directory for archive data
-    test_mode : bool
-        Whether to run in test mode
-    test_snapshots : int
-        Number of snapshots for test mode
-
-    Returns:
-    --------
-    pd.DataFrame
-        Collected historical data
+    Main execution function using unified configuration system
     """
+    # Use unified config - same functions as your _02 script
+    logger = setup_logging()
+    config = setup_directories()
+    
+    # Extract paths from config
+    raw_data_dir = config["raw_data_dir"]
+    processed_dir = config["processed_dir"]
+    archive_dir = config["archive_dir"]
+    
+    logger.info("Starting Wayback Machine data collection")
+    logger.info(f"Base directory: {config['base_dir']}")
+
     # Create news subdirectories
     news_raw_dir = f"{raw_data_dir}/news"
     news_processed_dir = f"{processed_dir}/news"
@@ -887,32 +922,15 @@ def main_wayback_collection(
         logger.warning("No articles were collected. No files saved.")
         return pd.DataFrame()
 
-
 if __name__ == "__main__":
     # Wayback Machine Historical Data Collection - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
-    logger = setup_logging()
-    config = setup_directories()
-
     logger.info("Starting Wayback Machine historical data collection...")
 
     # You can run in test mode first to verify the system works:
-    # collected_data = main_wayback_collection(
-    #     config['raw_data_dir'],
-    #     config['processed_dir'],
-    #     config['archive_dir'],
-    #     test_mode=True,
-    #     test_snapshots=3
-    # )
+    # collected_data = main_wayback_collection(test_mode=True, test_snapshots=3)
 
     # Or run the full collection:
-    collected_data = main_wayback_collection(
-        config["raw_data_dir"],
-        config["processed_dir"],
-        config["archive_dir"],
-        test_mode=False,
-    )
+    collected_data = main_wayback_collection(test_mode=False)
 
     if not collected_data.empty:
         print(

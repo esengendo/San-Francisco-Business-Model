@@ -18,7 +18,7 @@ def setup_directories():
 
     # Set base directory to local MacBook folder
     base_dir = os.getenv("BASE_DIR", "/app/San_Francisco_Business_Model")
-    #base_dir = "/Users/baboo/Documents/San Francisco Business Model"
+  
     raw_data_dir = f"{base_dir}/raw_data"
     processed_dir = f"{base_dir}/processed"
     model_dir = f"{base_dir}/models"

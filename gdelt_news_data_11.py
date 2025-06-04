@@ -11,6 +11,13 @@ from datetime import datetime, timedelta
 from urllib.parse import urlparse
 from helper_functions_03 import save_to_parquet
 
+# ADD after existing imports:
+import sys
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+from config import setup_logging, setup_directories
+
 # Setup logging
 logger = logging.getLogger(__name__)
 
@@ -411,13 +418,15 @@ def fetch_gdelt_news_robust(raw_data_dir, processed_dir):
         return dummy_df
 
 
+# REPLACE the main section with:
 if __name__ == "__main__":
-    # GDELT News Data Collection - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
     logger = setup_logging()
     config = setup_directories()
-
+    
+    logger.info("Starting GDELT News Fetcher data processing")
+    logger.info(f"Base directory: {config['base_dir']}")
+    
+    # Keep your existing main code
     logger.info("Starting robust multi-approach GDELT data collection...")
 
     # Execute the function

@@ -1,6 +1,3 @@
-# temporal_fix_pipeline_23.py
-# Temporal Data Leakage Fix Pipeline
-# Diagnoses and fixes temporal leakage in business success prediction data
 import os
 import pandas as pd
 import numpy as np

@@ -2,11 +2,17 @@ import os
 import logging
 import pandas as pd
 from fredapi import Fred
+import sys
+
+# Add project root to path if running directly
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+
+# Import unified config - same functions as your _02 script
+from config import setup_logging, setup_directories
 from helper_functions_03 import save_to_parquet
 from api_keys_validation_01 import validate_api_keys
-
-# Setup logging
-logger = logging.getLogger(__name__)
 
 
 def fetch_fred_economic_data(
@@ -16,6 +22,8 @@ def fetch_fred_economic_data(
     Fetch economic indicators from FRED API for San Francisco region.
     FRED provides excellent historical data going back decades.
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.fred_economic_data_05")
     logger.info("Fetching FRED Economic Data...")
 
     # Use the API key provided or load from environment
@@ -107,11 +115,16 @@ def fetch_fred_economic_data(
 
 
 if __name__ == "__main__":
-    # FRED Economic Data API - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
+    # Use unified config - same functions as your _02 script
     logger = setup_logging()
     config = setup_directories()
+    
+    logger.info("Starting FRED Economic data collection")
+    logger.info(f"Base directory: {config['base_dir']}")
+    
+    # Create directories if they don't exist - same pattern as your _02 script
+    os.makedirs(f"{config['raw_data_dir']}/economic", exist_ok=True)
+    os.makedirs(f"{config['processed_dir']}/economic", exist_ok=True)
 
     # Execute the function
     fred_economic_df = fetch_fred_economic_data(

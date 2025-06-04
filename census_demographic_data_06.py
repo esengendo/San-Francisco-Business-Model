@@ -5,11 +5,17 @@ import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
 from census import Census
+import sys
+
+# Add project root to path if running directly
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+
+# Import unified config - same functions as your _02 script
+from config import setup_logging, setup_directories
 from helper_functions_03 import save_to_parquet
 from api_keys_validation_01 import validate_api_keys
-
-# Setup logging
-logger = logging.getLogger(__name__)
 
 
 def fetch_raw_census_data(raw_data_dir, start_date, end_date, census_api_key=None):
@@ -32,6 +38,8 @@ def fetch_raw_census_data(raw_data_dir, start_date, end_date, census_api_key=Non
     pd.DataFrame
         DataFrame containing raw census data for San Francisco
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.census_demographic_data_06")
     logger.info("Fetching raw Census data for San Francisco...")
 
     # Ensure raw data directory exists
@@ -223,6 +231,8 @@ def process_census_data(raw_data, processed_dir):
     pd.DataFrame
         DataFrame containing processed neighborhood-level census data
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.census_demographic_data_06")
     logger.info("Processing Census data...")
 
     # Ensure processed directory exists
@@ -585,11 +595,16 @@ def fetch_and_process_census_data(raw_data_dir, processed_dir, start_date, end_d
 
 
 if __name__ == "__main__":
-    # Census Demographic Data API - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
+    # Use unified config - same functions as your _02 script
     logger = setup_logging()
     config = setup_directories()
+
+    logger.info("Starting Census Demographic data collection")
+    logger.info(f"Base directory: {config['base_dir']}")
+
+    # Create directories if they don't exist - same pattern as your _02 script
+    os.makedirs(f"{config['raw_data_dir']}/demographic", exist_ok=True)
+    os.makedirs(f"{config['processed_dir']}/demographic", exist_ok=True)
 
     # Execute the function
     census_demographic_df = fetch_and_process_census_data(

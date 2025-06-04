@@ -6,9 +6,15 @@ import pandas as pd
 import sodapy
 from datetime import datetime, timedelta
 import gc
+import sys
 
-# Setup logging
-logger = logging.getLogger(__name__)
+# Add project root to path if running directly
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+
+# Import unified config - same functions as your _02 script
+from config import setup_logging, setup_directories
 
 
 def categorize_service(service_name):
@@ -243,6 +249,8 @@ def process_batch(batch_df):
     """
     Process a batch of SF311 data with comprehensive transformations.
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf311_data_09")
     logger.info(f"Processing batch with {len(batch_df)} records")
 
     # Process date columns
@@ -309,6 +317,8 @@ def fetch_batch(
     """
     Fetch a batch of SF311 data with specified columns and date range.
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf311_data_09")
     logger.info(
         f"Fetching data from {batch_start.strftime('%Y-%m-%d')} to {batch_end.strftime('%Y-%m-%d')} (limited to {max_records} records)"
     )
@@ -412,6 +422,9 @@ def fetch_sf311_data(
     pd.DataFrame
         Combined SF311 data from all batches
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf311_data_09")
+    
     # Default to a useful subset of columns if none specified
     if select_columns is None:
         select_columns = [
@@ -592,6 +605,9 @@ def main_sf311_fetch(
     pd.DataFrame
         Combined SF311 data
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf311_data_09")
+    
     # Create subdirectories for SF311 data
     sf311_raw_dir = f"{raw_data_dir}/sf311"
     sf311_processed_dir = f"{processed_dir}/sf311"
@@ -614,11 +630,16 @@ def main_sf311_fetch(
 
 
 if __name__ == "__main__":
-    # SF311 Data Collection - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
+    # Use unified config - same functions as your _02 script
     logger = setup_logging()
     config = setup_directories()
+    
+    logger.info("Starting SF311 Service Request data collection")
+    logger.info(f"Base directory: {config['base_dir']}")
+    
+    # Create directories if they don't exist - same pattern as your _02 script
+    os.makedirs(f"{config['raw_data_dir']}/sf311", exist_ok=True)
+    os.makedirs(f"{config['processed_dir']}/sf311", exist_ok=True)
 
     # Execute the main function with cleanup
     try:

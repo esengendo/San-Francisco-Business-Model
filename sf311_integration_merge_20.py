@@ -1,6 +1,3 @@
-# sf311_integration_pipeline_20.py
-# SF 311 Service Calls Data Integration Pipeline
-# Integrates business success data with SF 311 service call information
 import os
 import pandas as pd
 import numpy as np
@@ -24,9 +21,9 @@ def setup_logging_and_directories():
     # Configure paths for MacBook structure - using correct file names
     base_dir = os.getenv("BASE_DIR", "/app/San_Francisco_Business_Model")
     # base_dir = Path("/Users/baboo/Documents/San Francisco Business Model")
-    processed_dir = base_dir / "processed"
-    final_dir = processed_dir / "final"
-    sf311_dir = processed_dir / "sf311"
+    processed_dir = os.path.join(base_dir, "processed")
+    final_dir = os.path.join(processed_dir, "final")
+    sf311_dir = os.path.join(processed_dir, "sf311")
 
     # Set pandas display options
     pd.set_option("display.max_columns", None)
@@ -41,10 +38,10 @@ def load_datasets(final_dir, sf311_dir, logger):
 
     # Load dataframes
     business_df = pd.read_parquet(
-        final_dir / "sf_business_success_with_permits.parquet"
+        os.path.join(final_dir, "sf_business_success_with_permits.parquet")
     )
     sf311_df = pd.read_parquet(
-        sf311_dir / "sf311_all_data.parquet"
+        os.path.join(sf311_dir, "sf311_all_data.parquet")
     )  # Using correct filename
 
     logger.info(f"Business dataframe shape: {business_df.shape}")
@@ -446,7 +443,9 @@ def save_final_dataset(business_with_311, business_df, final_dir, logger):
         print(f"  • {col}")
 
     # Save to parquet file with all columns preserved
-    output_path = final_dir / "sf_business_success_with_311.parquet"
+    output_path = output_path = os.path.join(
+        final_dir, "sf_business_success_with_311.parquet"
+    )
     try:
         business_with_311.to_parquet(output_path)
         logger.info(f"Final merged dataset saved to: {output_path}")

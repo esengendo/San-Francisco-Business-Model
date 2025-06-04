@@ -9,10 +9,16 @@ import re
 import calendar
 from datetime import datetime, timedelta
 from tqdm import tqdm
-from helper_functions_03 import save_to_parquet
+import sys
 
-# Setup logging
-logger = logging.getLogger(__name__)
+# Add project root to path if running directly
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+
+# Import unified config - same functions as your _02 script
+from config import setup_logging, setup_directories
+from helper_functions_03 import save_to_parquet
 
 
 def fetch_sf_news_from_rss():
@@ -25,6 +31,8 @@ def fetch_sf_news_from_rss():
     pd.DataFrame
         DataFrame containing RSS news articles
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf_news_rss_data_12")
     logger.info("Fetching news from San Francisco RSS feeds...")
 
     # List of RSS feeds for San Francisco news sources
@@ -178,6 +186,9 @@ def fetch_historical_news(start_year=None, end_year=None):
     pd.DataFrame
         DataFrame containing historical news articles
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf_news_rss_data_12")
+    
     if start_year is None:
         start_year = datetime.now().year - 5
     if end_year is None:
@@ -523,6 +534,9 @@ def process_and_save_data(news_df, hist_df, raw_data_dir, processed_dir, archive
     pd.DataFrame
         Combined and processed news data
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf_news_rss_data_12")
+    
     # Define the data directories for saving
     news_raw_dir = f"{raw_data_dir}/news"
     news_processed_dir = f"{processed_dir}/news"
@@ -599,6 +613,9 @@ def main_sf_news_collection(raw_data_dir, processed_dir, archive_dir, start_year
     pd.DataFrame
         Combined news data
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.sf_news_rss_data_12")
+    
     if start_year is None:
         start_year = datetime.now().year - 5
 
@@ -623,11 +640,16 @@ def main_sf_news_collection(raw_data_dir, processed_dir, archive_dir, start_year
 
 
 if __name__ == "__main__":
-    # San Francisco News RSS Data Collection - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
+    # Use unified config - same functions as your _02 script
     logger = setup_logging()
     config = setup_directories()
+    
+    logger.info("Starting SF News RSS data collection")
+    logger.info(f"Base directory: {config['base_dir']}")
+    
+    # Create directories if they don't exist - same pattern as your _02 script
+    os.makedirs(f"{config['raw_data_dir']}/news", exist_ok=True)
+    os.makedirs(f"{config['processed_dir']}/news", exist_ok=True)
 
     # Execute the main function
     news_data = main_sf_news_collection(

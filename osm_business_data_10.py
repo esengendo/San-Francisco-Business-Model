@@ -6,6 +6,14 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# ADD after existing imports:
+import sys
+
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+from config import setup_logging, setup_directories
+
 # Setup logging
 logger = logging.getLogger(__name__)
 
@@ -611,13 +619,15 @@ def main_comprehensive_osm_collection(base_dir):
         return {}, pd.DataFrame()
 
 
+# REPLACE the main section with:
 if __name__ == "__main__":
-    # Enhanced OSM Business Collection - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
     logger = setup_logging()
     config = setup_directories()
 
+    logger.info("Starting OSM Business Collector data processing")
+    logger.info(f"Base directory: {config['base_dir']}")
+
+    # Keep your existing main code
     logger.info(
         "Starting comprehensive SF business data collection from OpenStreetMap..."
     )

@@ -7,10 +7,15 @@ import pandas as pd
 from datetime import datetime
 from collections import defaultdict
 from tqdm import tqdm
-from helper_functions_03 import save_to_parquet
+import sys
 
-# Setup logging
-logger = logging.getLogger(__name__)
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+
+# Import unified config - same functions as your _02 script
+from config import setup_logging, setup_directories
+from helper_functions_03 import save_to_parquet
 
 # Define the columns we want to read from the source file
 COLUMNS_TO_READ = [
@@ -51,6 +56,9 @@ def load_data(file_path):
     pd.DataFrame
         DataFrame containing the data with selected columns
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     # First check which columns actually exist in the file
     try:
         available_columns = pd.read_parquet(file_path, columns=None).columns.tolist()
@@ -556,6 +564,9 @@ def create_business_industry_column(df):
     pandas DataFrame
         DataFrame with new business_industry column
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     # Get mappings
     naics_mapping, range_mapping = create_naics_mapping()
     keyword_mapping = create_keyword_industry_mapping()
@@ -587,6 +598,9 @@ def clean_date_columns(df):
     pandas DataFrame
         The dataframe with additional standardized date columns
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     # List of date columns to process
     date_columns = [
         "dba_start_date",
@@ -628,6 +642,9 @@ def extract_lat_long(df):
     pandas DataFrame
         DataFrame with new columns: 'latitude', 'longitude', and 'in_sf'
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     # Initialize new columns
     df["longitude"] = None
     df["latitude"] = None
@@ -751,6 +768,9 @@ def fill_missing_geo_data(df):
     pandas DataFrame
         DataFrame with filled neighborhood and district information for SF records
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     logger.info(
         "Filling missing geographic information for San Francisco businesses..."
     )
@@ -1109,6 +1129,9 @@ def add_business_status_and_age(df):
     pandas DataFrame
         DataFrame with new columns: is_open and business_age_years
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     logger.info("Adding business status and age columns...")
 
     # Create a copy to avoid modifying the original dataframe
@@ -1218,6 +1241,9 @@ def add_business_status_and_age(df):
 
 def create_processing_summary(df, summary_path, input_path, sf_only):
     """Create a summary report of the business data processing"""
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     try:
         with open(summary_path, "w") as f:
             f.write(f"SF Business Data Processing Report\n")
@@ -1305,6 +1331,9 @@ def process_businesses_from_drive(
     pandas DataFrame
         Processed DataFrame
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     logger.info(f"Loading data from {input_path}...")
 
     # Load data
@@ -1439,6 +1468,9 @@ def main_business_processing(raw_data_dir, processed_dir, sf_only=True):
     pd.DataFrame or None
         Processed business DataFrame
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.business_data_processing_15")
+    
     # Define business specific directories
     business_raw_dir = f"{raw_data_dir}/sf_business"
     business_processed_dir = f"{processed_dir}/sf_business"
@@ -1477,11 +1509,16 @@ def main_business_processing(raw_data_dir, processed_dir, sf_only=True):
 
 
 if __name__ == "__main__":
-    # Business Data Processing Pipeline - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
+    # Use unified config - same functions as your _02 script
     logger = setup_logging()
     config = setup_directories()
+    
+    logger.info("Starting Business Data Processing pipeline")
+    logger.info(f"Base directory: {config['base_dir']}")
+    
+    # Create directories if they don't exist - same pattern as your _02 script
+    os.makedirs(f"{config['raw_data_dir']}/sf_business", exist_ok=True)
+    os.makedirs(f"{config['processed_dir']}/sf_business", exist_ok=True)
 
     logger.info("Starting business data processing pipeline...")
 

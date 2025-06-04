@@ -1,33 +1,41 @@
-# Environment variables
+# Environment files
 .env
-.env.local
 .env.docker
-.env.*.local
+.env.local
 
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
+*.pyc
+*.pyo
+*.pyd
 .Python
 env/
 venv/
-ENV/
-myvenv_torch/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Data files (large files shouldn't go to git)
-*.csv
-*.json
-*.pkl
-*.parquet
+# Data directories
 raw_data/
 processed/
-models/
-archive/
-*.log
+data/
+results/
+logs/
+*.parquet
+*.json
+*.csv
 
-# Jupyter
-.ipynb_checkpoints/
+# Models
+models/
+*.pkl
+*.joblib
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
 
 # IDE
 .vscode/
@@ -35,9 +43,5 @@ archive/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Docker
-docker-compose.override.yml
+# Jupyter
+.ipynb_checkpoints/

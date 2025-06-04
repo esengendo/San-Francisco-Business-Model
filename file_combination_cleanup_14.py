@@ -6,10 +6,16 @@ import pytz
 import shutil
 from datetime import datetime, timedelta
 from tqdm import tqdm
-from helper_functions_03 import save_to_parquet
+import sys
 
-# Setup logging
-logger = logging.getLogger(__name__)
+# Add project root to path if running directly
+if __name__ == "__main__":
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, project_root)
+
+# Import unified config - same functions as your _02 script
+from config import setup_logging, setup_directories
+from helper_functions_03 import save_to_parquet
 
 
 def normalize_timezone_columns(df):
@@ -26,6 +32,9 @@ def normalize_timezone_columns(df):
     pd.DataFrame
         DataFrame with normalized timezone handling
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.file_combination_cleanup_14")
+    
     # Check if published_date column exists
     if "published_date" in df.columns:
         try:
@@ -104,6 +113,9 @@ def find_news_files(raw_data_dir, processed_dir, archive_dir, file_types=None):
     list
         List of file paths to parquet files
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.file_combination_cleanup_14")
+    
     if file_types is None:
         file_types = ["rss", "gdelt", "wayback", "historical", "news", "articles"]
 
@@ -201,6 +213,9 @@ def combine_parquet_files(
     pd.DataFrame or None
         Combined DataFrame, or None if no files found
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.file_combination_cleanup_14")
+    
     logger.info("Starting combination of news parquet files")
 
     # Find all parquet files
@@ -311,6 +326,9 @@ def move_to_archive(raw_data_dir, archive_dir, files_to_keep=None):
     files_to_keep : list, optional
         List of files to keep (not move to archive)
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.file_combination_cleanup_14")
+    
     if files_to_keep is None:
         files_to_keep = []
 
@@ -394,6 +412,9 @@ def create_summary_report(df, output_filepath):
     output_filepath : str
         Path to save the summary report
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.file_combination_cleanup_14")
+    
     try:
         with open(output_filepath, "w") as f:
             f.write(f"SF Business News Data Combination Report\n")
@@ -490,6 +511,9 @@ def main_file_combination(
     pd.DataFrame or None
         Combined DataFrame or None if failed
     """
+    # Use the unified logging system
+    logger = logging.getLogger("SFBusinessPipeline.file_combination_cleanup_14")
+    
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # Define final output filename
@@ -558,11 +582,16 @@ def main_file_combination(
 
 
 if __name__ == "__main__":
-    # File Combination and Cleanup - Execution
-    from logging_config_setup_02 import setup_logging, setup_directories
-
+    # Use unified config - same functions as your _02 script
     logger = setup_logging()
     config = setup_directories()
+    
+    logger.info("Starting File Combination and Cleanup pipeline")
+    logger.info(f"Base directory: {config['base_dir']}")
+    
+    # Create directories if they don't exist - same pattern as your _02 script
+    os.makedirs(f"{config['raw_data_dir']}/news", exist_ok=True)
+    os.makedirs(f"{config['processed_dir']}/news", exist_ok=True)
 
     logger.info("Starting file combination and cleanup process...")
 
