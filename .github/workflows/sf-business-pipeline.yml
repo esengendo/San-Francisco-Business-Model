@@ -1,0 +1,114 @@
+name: 🏢 SF Business Model Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    # Allow manual triggers
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: 🔧 Create Environment File
+      run: |
+        cat > .env.docker << EOF
+        FRED_API_KEY=${{ secrets.FRED_API_KEY }}
+        CENSUS_API_KEY=${{ secrets.CENSUS_API_KEY }}
+        SFGOV_API_TOKEN=${{ secrets.SFGOV_API_TOKEN }}
+        PIPELINE_MODE=single_run
+        LOG_LEVEL=INFO
+        BASE_DIR=/app
+        EOF
+        
+    - name: 🏗️ Build Docker Image
+      run: |
+        docker build -t sf-business-model .
+        
+    - name: 🚀 Run SF Business Pipeline
+      run: |
+        docker run --rm \
+          --env-file .env.docker \
+          -v ${{ github.workspace }}/models:/app/models \
+          -v ${{ github.workspace }}/processed:/app/processed \
+          -v ${{ github.workspace }}/results:/app/results \
+          -v ${{ github.workspace }}/logs:/app/logs \
+          sf-business-model python pipeline_runner.py
+          
+    - name: 📊 Upload Model Artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: sf-business-model-results
+        path: |
+          models/
+          processed/final/
+          logs/
+          pipeline_report_*.json
+        retention-days: 30
+        
+    - name: 📈 Upload Processing Results
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: sf-business-datasets
+        path: |
+          processed/
+        retention-days: 90
+
+  validate:
+    runs-on: ubuntu-latest
+    needs: pipeline
+    if: success()
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📊 Download Results
+      uses: actions/download-artifact@v4
+      with:
+        name: sf-business-model-results
+        
+    - name: ✅ Validate Pipeline Results
+      run: |
+        echo "🔍 Validating pipeline results..."
+        
+        # Check if key files exist
+        if ls pipeline_report_*.json 1> /dev/null 2>&1; then
+          echo "✅ Pipeline report found"
+        else
+          echo "❌ Pipeline report missing"
+          exit 1
+        fi
+        
+        if [ -d "models" ]; then
+          echo "✅ Models directory created"
+          ls -la models/
+        else
+          echo "❌ Models directory missing"
+          exit 1
+        fi
+        
+        if [ -d "processed/final" ]; then
+          echo "✅ Final processed data found"
+          ls -la processed/final/
+        else
+          echo "❌ Final processed data missing"
+          exit 1
+        fi
+        
+        echo "🎉 All validation checks passed!"
