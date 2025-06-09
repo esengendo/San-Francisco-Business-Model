@@ -18,8 +18,8 @@ warnings.filterwarnings("ignore")
 # CONFIGURATION - Update these paths to match your setup
 # ============================================================================
 
-BASE_DIR = os.getenv("BASE_DIR", "/app/San_Francisco_Business_Model")
-# BASE_DIR = "/Users/baboo/Documents/San Francisco Business Model"
+# BASE_DIR = os.getenv("BASE_DIR", "/app/San_Francisco_Business_Model")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = f"{BASE_DIR}/models"
 DATA_DIR = f"{BASE_DIR}/processed/final"
 
