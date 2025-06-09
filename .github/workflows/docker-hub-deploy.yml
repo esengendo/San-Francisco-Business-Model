@@ -1,0 +1,103 @@
+name: 🚀 Docker Hub CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE: esengendo730/sf-business-model
+  REGISTRY: docker.io
+
+jobs:
+  test-and-build:
+    name: 🧪 Test & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔍 Basic Python tests
+        run: |
+          echo "🧪 Testing Python imports..."
+          python -c "
+          import streamlit
+          import torch
+          import pandas as pd
+          import numpy as np
+          print('✅ All essential imports successful!')
+          "
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix={{branch}}-
+
+      - name: 🔨 Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🎉 Output success
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "🚀 Docker image built and pushed successfully!"
+          echo "📦 Image: ${{ env.DOCKER_IMAGE }}"
+          echo "🏷️ Tags: ${{ steps.meta.outputs.tags }}"
+          echo "🌐 Docker Hub: https://hub.docker.com/r/${{ env.DOCKER_IMAGE }}"
+
+  deploy-info:
+    name: 📋 Deployment Info
+    runs-on: ubuntu-latest
+    needs: test-and-build
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: 📢 Deployment Summary
+        run: |
+          echo "🎯 SF Business Model - Deployment Summary"
+          echo "==============================================="
+          echo "🐳 Docker Image: ${{ env.DOCKER_IMAGE }}:latest"
+          echo "🌐 Docker Hub: https://hub.docker.com/r/${{ env.DOCKER_IMAGE }}"
+          echo "🚀 Run Command:"
+          echo "   docker run -p 8501:8501 ${{ env.DOCKER_IMAGE }}:latest"
+          echo "📱 Access App: http://localhost:8501"
+          echo "===============================================" 
