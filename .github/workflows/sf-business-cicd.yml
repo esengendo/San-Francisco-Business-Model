@@ -1,0 +1,186 @@
+name: 🚀 SF Business Model - Complete CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC for data pipeline
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    # Allow manual triggers
+
+env:
+  DOCKER_IMAGE: esengendo730/sf-business-model
+  REGISTRY: docker.io
+
+jobs:
+  test:
+    name: 🧪 Code Quality & Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔍 Code quality tests
+        run: |
+          echo "🧪 Testing Python imports..."
+          python -c "
+          import streamlit
+          import torch
+          import pandas as pd
+          import numpy as np
+          print('✅ All essential imports successful!')
+          "
+          
+          echo "📁 Checking new folder structure..."
+          [ -d "src/data_collection" ] && echo "✅ Data collection folder exists"
+          [ -d "src/processing" ] && echo "✅ Processing folder exists"
+          [ -d "src/models" ] && echo "✅ Models folder exists"
+          [ -d "src/utils" ] && echo "✅ Utils folder exists"
+          [ -d "app" ] && echo "✅ App folder exists"
+
+  build-and-deploy:
+    name: 🐳 Build & Deploy to Docker Hub
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name != 'pull_request'
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix={{branch}}-
+
+      - name: 🔨 Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🎉 Deployment Summary
+        run: |
+          echo "🎯 SF Business Model - Deployment Summary"
+          echo "==============================================="
+          echo "🐳 Docker Image: ${{ env.DOCKER_IMAGE }}:latest"
+          echo "🌐 Docker Hub: https://hub.docker.com/r/${{ env.DOCKER_IMAGE }}"
+          echo "🚀 Run Command:"
+          echo "   docker run -p 8501:8501 ${{ env.DOCKER_IMAGE }}:latest"
+          echo "📱 Access App: http://localhost:8501"
+          echo "==============================================="
+
+  data-pipeline:
+    name: 📊 Run Data Pipeline
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 90
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        
+      - name: 🔧 Create Environment File
+        run: |
+          cat > .env.docker << EOF
+          FRED_API_KEY=${{ secrets.FRED_API_KEY }}
+          CENSUS_API_KEY=${{ secrets.CENSUS_API_KEY }}
+          SFGOV_API_TOKEN=${{ secrets.SFGOV_API_TOKEN }}
+          PIPELINE_MODE=single_run
+          LOG_LEVEL=INFO
+          BASE_DIR=/app
+          EOF
+          
+      - name: 🚀 Run SF Business Data Pipeline
+        run: |
+          docker run --rm \
+            --env-file .env.docker \
+            -v ${{ github.workspace }}/data:/app/data \
+            -v ${{ github.workspace }}/results:/app/results \
+            -v ${{ github.workspace }}/logs:/app/logs \
+            ${{ env.DOCKER_IMAGE }}:latest python src/pipeline_runner.py
+            
+      - name: 📊 Upload Pipeline Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sf-business-pipeline-results-${{ github.run_number }}
+          path: |
+            data/
+            results/
+            logs/
+            pipeline_report_*.json
+          retention-days: 30
+
+  validate-pipeline:
+    name: ✅ Validate Pipeline Results
+    runs-on: ubuntu-latest
+    needs: data-pipeline
+    if: success()
+    
+    steps:
+      - name: 📊 Download Pipeline Results
+        uses: actions/download-artifact@v4
+        with:
+          name: sf-business-pipeline-results-${{ github.run_number }}
+          
+      - name: ✅ Validate Results
+        run: |
+          echo "🔍 Validating pipeline results..."
+          
+          # Check if key files exist
+          if ls pipeline_report_*.json 1> /dev/null 2>&1; then
+            echo "✅ Pipeline report found"
+            cat pipeline_report_*.json | head -20
+          else
+            echo "❌ Pipeline report missing"
+            exit 1
+          fi
+          
+          if [ -d "data" ]; then
+            echo "✅ Data directory created"
+            du -sh data/
+          else
+            echo "❌ Data directory missing"
+            exit 1
+          fi
+          
+          echo "🎉 All validation checks passed!"

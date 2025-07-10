@@ -1,8 +1,5 @@
-# Use Python 3.11 slim as base image
+# Optimized Docker image for SF Business Model
 FROM python:3.11-slim
-
-# Set working directory
-WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -19,6 +16,9 @@ RUN apt-get update && apt-get install -y \
     libgeos-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Set working directory
+WORKDIR /app
+
 # Copy requirements and install Python packages
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -26,42 +26,31 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Force reinstall numpy<2 to avoid compatibility issues
 RUN pip install "numpy<2" --force-reinstall
 
-# Copy Python files
-COPY *.py ./
+# Copy source code and required files
+COPY src/ ./src/
+COPY app/ ./app/
+COPY land_use_fallback.parquet ./
 
-# Create main directory structure
-RUN mkdir -p "/app/San_Francisco_Business_Model/raw_data" \
-    "/app/San_Francisco_Business_Model/processed" \
-    "/app/San_Francisco_Business_Model/models" \
-    "/app/San_Francisco_Business_Model/archive"
+# Create streamlined directory structure
+RUN mkdir -p data/{raw,processed,models} \
+    logs results archive \
+    San_Francisco_Business_Model/{raw_data,processed,models,archive}
 
-# Create all raw_data subdirectories explicitly
-RUN mkdir -p \
-    "/app/San_Francisco_Business_Model/raw_data/sf_business" \
-    "/app/San_Francisco_Business_Model/raw_data/economic" \
-    "/app/San_Francisco_Business_Model/raw_data/demographic" \
-    "/app/San_Francisco_Business_Model/raw_data/planning" \
-    "/app/San_Francisco_Business_Model/raw_data/crime" \
-    "/app/San_Francisco_Business_Model/raw_data/sf311" \
-    "/app/San_Francisco_Business_Model/raw_data/mobility" \
-    "/app/San_Francisco_Business_Model/raw_data/yelp" \
-    "/app/San_Francisco_Business_Model/raw_data/news" \
-    "/app/San_Francisco_Business_Model/raw_data/historical" \
-    "/app/San_Francisco_Business_Model/raw_data/final"
+# Create compatibility symlinks for legacy paths
+RUN ln -s /app/data/raw /app/San_Francisco_Business_Model/raw_data && \
+    ln -s /app/data/processed /app/San_Francisco_Business_Model/processed && \
+    ln -s /app/data/models /app/San_Francisco_Business_Model/models
 
-# Create all processed subdirectories explicitly  
-RUN mkdir -p \
-    "/app/San_Francisco_Business_Model/processed/sf_business" \
-    "/app/San_Francisco_Business_Model/processed/economic" \
-    "/app/San_Francisco_Business_Model/processed/demographic" \
-    "/app/San_Francisco_Business_Model/processed/planning" \
-    "/app/San_Francisco_Business_Model/processed/crime" \
-    "/app/San_Francisco_Business_Model/processed/sf311" \
-    "/app/San_Francisco_Business_Model/processed/mobility" \
-    "/app/San_Francisco_Business_Model/processed/yelp" \
-    "/app/San_Francisco_Business_Model/processed/news" \
-    "/app/San_Francisco_Business_Model/processed/historical" \
-    "/app/San_Francisco_Business_Model/processed/final"
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV BASE_DIR=/app
 
-# Set default command to run the pipeline
-CMD ["python", "pipeline_runner.py"]
+# Health check for Streamlit
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Expose port for Streamlit
+EXPOSE 8501
+
+# Default command - Streamlit app (can be overridden for pipeline)
+CMD ["streamlit", "run", "app/app.py", "--server.port=8501", "--server.address=0.0.0.0"]

@@ -14,9 +14,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-# ============================================================================
-# CONFIGURATION - Update these paths to match your setup
-# ============================================================================
+# Configuration
 
 # BASE_DIR = os.getenv("BASE_DIR", "/app/San_Francisco_Business_Model")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,9 +30,7 @@ PREPROCESSING_INFO_PATH = f"{MODEL_DIR}/preprocessing_info.json"
 X_TRAIN_PATH = f"{DATA_DIR}/X_train.parquet"
 Y_TRAIN_PATH = f"{DATA_DIR}/y_train.parquet"
 
-# ============================================================================
-# MODEL ARCHITECTURE - Must match your training code exactly
-# ============================================================================
+# Model Architecture
 
 
 class BusinessSurvivalModel(pl.LightningModule):
@@ -137,9 +133,7 @@ class BusinessSurvivalModel(pl.LightningModule):
         return logits
 
 
-# ============================================================================
-# LOADING FUNCTIONS
-# ============================================================================
+# Loading Functions
 
 
 @st.cache_resource
@@ -199,9 +193,7 @@ def load_training_data():
         return None, False
 
 
-# ============================================================================
-# FEATURE PREPARATION FUNCTIONS
-# ============================================================================
+# Feature Preparation
 
 
 def prepare_input_features(input_data, preprocessing_info, training_data=None):
@@ -307,9 +299,7 @@ def prepare_input_features(input_data, preprocessing_info, training_data=None):
     return spatial_scaled, temporal_scaled, business_scaled
 
 
-# ============================================================================
-# PREDICTION FUNCTION
-# ============================================================================
+# Prediction Function
 
 
 def predict_business_success(model, input_data, preprocessing_info, training_data=None):
@@ -367,9 +357,7 @@ def predict_business_success(model, input_data, preprocessing_info, training_dat
         return 0.5  # Default fallback
 
 
-# ============================================================================
-# VISUALIZATION FUNCTIONS
-# ============================================================================
+# Visualization Functions
 
 
 def create_success_gauge(score):
@@ -570,9 +558,7 @@ def create_spatial_heatmap(df, lat, lon):
         return None
 
 
-# ============================================================================
-# MAIN STREAMLIT APP
-# ============================================================================
+# Main Streamlit App
 
 
 def main():

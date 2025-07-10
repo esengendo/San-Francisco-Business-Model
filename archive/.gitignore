@@ -1,0 +1,7 @@
+# Archive folder - exclude all backup files from git
+*.pkl
+*_backup_*
+collection_progress_*
+
+# Keep this directory but ignore all backup files
+# Only keep the most recent final files if needed

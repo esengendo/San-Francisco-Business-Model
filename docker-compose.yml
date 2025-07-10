@@ -1,8 +1,14 @@
 
 services:
-  sf-business-model:
-    build: .
-    container_name: sf-business-model-app
+  # Streamlit web application
+  sf-business-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile.new
+      target: production
+    container_name: sf-business-app
+    ports:
+      - "8501:8501"
     env_file:
       - .env.docker
     volumes:
@@ -10,23 +16,45 @@ services:
       - ./data:/app/data
       - ./results:/app/results
       - ./logs:/app/logs
-      - ./models:/app/models
-      - ./processed:/app/processed
-      - ./raw_data:/app/raw_data
-      - ./archive:/app/archive
-    
-    # REMOVED: restart: unless-stopped  # This was causing continuous runs
-    
-    # Override the default CMD to run once and exit cleanly
-    command: python pipeline_runner.py
-    
     environment:
-      # Ensure single run mode
+      - LOG_LEVEL=INFO
+      - BASE_DIR=/app
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # Data pipeline runner (separate service)
+  sf-business-pipeline:
+    build: 
+      context: .
+      dockerfile: Dockerfile.new
+      target: production
+    container_name: sf-business-pipeline
+    env_file:
+      - .env.docker
+    volumes:
+      - ./data:/app/data
+      - ./results:/app/results
+      - ./logs:/app/logs
+    command: python src/pipeline_runner.py
+    environment:
       - PIPELINE_MODE=single_run
       - LOG_LEVEL=INFO
       - BASE_DIR=/app
-      
-    # Optional: Add resource limits to prevent system overload
+    profiles:
+      - pipeline  # Only run when explicitly requested
     deploy:
       resources:
         limits:
