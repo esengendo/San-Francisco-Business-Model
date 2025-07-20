@@ -49,3 +49,14 @@ Thumbs.db
 
 # Portfolio & Marketing Materials
 portfolio_materials/
+
+# AI Assistant Files (not for public repos)
+CLAUDE.md
+*claude*
+*CLAUDE*
+
+# Internal documentation (not for public repos)
+OPTIMIZATION_SUMMARY.md
+CLEANUP_SUMMARY.md
+IMPROVEMENTS_SUMMARY.md
+TEST_REPORT.md
