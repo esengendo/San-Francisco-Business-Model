@@ -1,0 +1,85 @@
+# Multi-Platform Optimized Dockerfile for SF Business Model
+# Supports: Mac M1/M2 (ARM64), Intel Mac (AMD64), Windows (WSL2)
+# Target: 2-3GB (vs current 4.84GB)
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+FROM --platform=$TARGETPLATFORM python:3.11-slim as builder
+
+# Display build info
+RUN echo "Building for $TARGETPLATFORM on $BUILDPLATFORM"
+
+# Install build dependencies (platform-aware)
+RUN apt-get update && apt-get install -y \
+    gcc g++ \
+    wget curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install geospatial dependencies (lighter versions)
+RUN apt-get update && apt-get install -y \
+    libgdal-dev \
+    libproj-dev \
+    libgeos-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install to user directory (more portable)
+COPY requirements-optimized.txt requirements.txt
+RUN pip install --user --no-cache-dir --upgrade pip
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# Platform-specific PyTorch installation (smaller)
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    pip install --user torch torchvision --index-url https://download.pytorch.org/whl/cpu; \
+elif [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    pip install --user torch torchvision --index-url https://download.pytorch.org/whl/cpu; \
+fi
+
+# ============================================================================
+# Runtime Stage - Minimal image for production
+# ============================================================================
+FROM --platform=$TARGETPLATFORM python:3.11-slim as runtime
+
+# Copy Python packages from builder
+COPY --from=builder /root/.local /root/.local
+
+# Add local packages to PATH
+ENV PATH=/root/.local/bin:$PATH
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Set working directory
+WORKDIR /app
+
+# Copy application files (in order of change frequency for better caching)
+COPY src/ ./src/
+COPY app/ ./app/
+COPY data/models/ ./data/models/
+
+# Create minimal directory structure for runtime
+RUN mkdir -p data/cache logs
+
+# Create compatibility symlinks for legacy paths
+RUN mkdir -p San_Francisco_Business_Model && \
+    ln -s /app/data /app/San_Francisco_Business_Model/data && \
+    ln -s /app/data/models /app/San_Francisco_Business_Model/models
+
+# Set environment variables
+ENV BASE_DIR=/app
+ENV MODEL_DIR=/app/data/models
+ENV STREAMLIT_SERVER_PORT=8501
+ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+
+# Expose port
+EXPOSE 8501
+
+# Health check for container monitoring
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Default command - optimized Streamlit app
+CMD ["streamlit", "run", "app/main.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true"]

@@ -1,0 +1,127 @@
+# Optimized Docker Compose for SF Business Model
+# Multi-platform support with separated services and resource management
+
+version: '3.8'
+
+services:
+  # Main Streamlit web application (employer showcase)
+  sf-business-app:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.multi-platform
+      target: runtime
+    container_name: sf-business-showcase
+    ports:
+      - "8501:8501"
+    environment:
+      - BASE_DIR=/app
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    volumes:
+      # Mount only essential data for runtime
+      - ../data/models:/app/data/models:ro
+      - app_cache:/app/data/cache
+      - app_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    restart: unless-stopped
+    networks:
+      - sf-business-network
+
+  # Data pipeline service (separate from web app)
+  sf-business-pipeline:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.multi-platform
+      target: runtime
+    container_name: sf-business-pipeline
+    command: python src/pipeline_runner.py
+    environment:
+      - BASE_DIR=/app
+      - PIPELINE_MODE=single_run
+      - LOG_LEVEL=INFO
+    volumes:
+      - ../storage:/app/storage
+      - ../data:/app/data
+      - pipeline_logs:/app/logs
+    profiles:
+      - pipeline  # Only run when explicitly requested
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    networks:
+      - sf-business-network
+
+  # Optional: Redis for caching (production enhancement)
+  redis:
+    image: redis:7-alpine
+    container_name: sf-business-cache
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    profiles:
+      - production
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    networks:
+      - sf-business-network
+
+  # Optional: Nginx reverse proxy (production deployment)
+  nginx:
+    image: nginx:alpine
+    container_name: sf-business-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ssl_certs:/etc/ssl/certs
+    depends_on:
+      - sf-business-app
+    profiles:
+      - production
+    networks:
+      - sf-business-network
+
+# Named volumes for data persistence
+volumes:
+  app_cache:
+    driver: local
+  app_logs:
+    driver: local
+  pipeline_logs:
+    driver: local
+  redis_data:
+    driver: local
+  ssl_certs:
+    driver: local
+
+# Network for service communication
+networks:
+  sf-business-network:
+    driver: bridge
+    name: sf-business-network

@@ -1,0 +1,56 @@
+# Optimized Dependencies for SF Business Model
+# Reduced from 183 to ~130 packages for Docker efficiency
+
+# Core Web Framework
+streamlit==1.45.1
+fastapi==0.115.12
+
+# Data Processing (Essential)
+pandas==2.2.3
+numpy<2
+pyarrow==20.0.0
+
+# Machine Learning (Core)
+scikit-learn==1.6.1
+pytorch-lightning==2.5.1.post0
+# torch and torchvision installed via Dockerfile for platform optimization
+
+# Visualization (Essential)
+plotly==6.1.1
+folium==0.19.6
+
+# Geospatial (Lightweight)
+geopandas==1.0.1
+shapely==2.1.1
+pyproj==3.7.1
+
+# HTTP and APIs
+requests==2.32.3
+httpx==0.28.1
+aiohttp==3.11.18
+
+# Data Sources (Essential APIs)
+fredapi==0.5.2
+census==0.8.24
+sodapy==2.2.0
+feedparser==6.0.11
+
+# Utilities
+python-dateutil==2.9.0.post0
+pydantic==2.11.4
+python-dotenv==1.1.0
+click==8.1.8
+
+# Text Processing (Minimal)
+beautifulsoup4==4.13.4
+lxml==5.4.0
+
+# Development (Removed from production)
+# pytest, jupyter, ruff, etc. moved to requirements-dev.txt
+
+# Removed Heavy/Unused Packages:
+# - gradio (alternative to streamlit)
+# - jupyter ecosystem (development only)
+# - multiple visualization libraries (using plotly only)
+# - groovy (unknown usage)
+# - many duplicate/unused packages

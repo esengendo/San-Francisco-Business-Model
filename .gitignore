@@ -1,7 +1,8 @@
-# Environment files
+# Environment files (contains sensitive API keys)
 .env
 .env.docker
 .env.local
+.env.*
 
 # Python
 __pycache__/
