@@ -1,8 +1,7 @@
 # Environment files (contains sensitive API keys)
 .env
-.env.docker
-.env.local
 .env.*
+*.env
 
 # Python
 __pycache__/
@@ -77,3 +76,9 @@ requirements-quick.txt
 # Disabled/backup files
 *.disabled
 *_old.py
+
+# Redundant Docker files (keep optimized versions only)
+Dockerfile.quick
+docker-compose.yml
+!deployment/Dockerfile.multi-platform
+!deployment/docker-compose.optimized.yml
