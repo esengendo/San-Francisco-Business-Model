@@ -287,6 +287,18 @@ sf-business-model/
 
 ---
 
+## **👨‍💻 About the Developer**
+
+**Emmanuel Sengendo** - Data Science & Machine Learning Engineer
+
+- 🔗 **LinkedIn**: [linkedin.com/in/esengendo](https://www.linkedin.com/in/esengendo/)
+- 📁 **Portfolio**: [github.com/esengendo](https://github.com/esengendo/)
+- 🎯 **Specialization**: Production ML systems, data engineering, and business intelligence
+
+*Interested in data science opportunities and ML engineering collaborations.*
+
+---
+
 ## 🧪 **Testing & Quality Assurance**
 
 **Automated Testing**: Complete test suite with 34+ unit tests covering pipeline components and dashboard functionality
