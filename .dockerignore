@@ -1,0 +1,145 @@
+# Enhanced Docker ignore for SF Business Model
+# Optimized for multi-platform builds and minimal image size
+
+# ============================================================================
+# LARGE DATA DIRECTORIES (Major size impact)
+# ============================================================================
+# Exclude large data directories (800MB+ total)
+storage/
+archive/
+raw_data/
+processed/
+visualizations/
+results/
+lightning_logs/
+
+# Keep only essential model files
+data/
+!data/models/
+
+# ============================================================================
+# DEVELOPMENT FILES
+# ============================================================================
+# Version control
+.git/
+.gitignore
+.github/
+
+# Python cache and build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.claude/
+
+# ============================================================================
+# PLATFORM-SPECIFIC FILES
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ============================================================================
+# LOGS AND TEMPORARY FILES
+# ============================================================================
+*.log
+logs/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Pipeline reports (generated at runtime)
+pipeline_report_*.json
+pipeline_execution.log
+
+# ============================================================================
+# DOCUMENTATION AND TESTING
+# ============================================================================
+# Documentation (except README)
+docs/
+notebooks/
+portfolio_materials/
+*.md
+!README.md
+
+# Testing
+tests/
+pytest_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ============================================================================
+# DATA FILES (Exclude large datasets)
+# ============================================================================
+*.pkl
+*.csv
+# Allow essential parquet files only
+# *.parquet
+
+# Cache files
+cache/
+
+# ============================================================================
+# OLD AND DISABLED FILES
+# ============================================================================
+*.disabled
+*.old
+*_old.py
+*_backup.*
+
+# ============================================================================
+# BUILD OPTIMIZATION
+# ============================================================================
+# Exclude other Dockerfiles to avoid confusion
+Dockerfile.old
+docker-compose.override.yml
+
+# Exclude package files
+*.whl
+*.tar.gz
+
+# Exclude development requirements
+requirements-dev.txt
+requirements.txt
+!requirements-optimized.txt

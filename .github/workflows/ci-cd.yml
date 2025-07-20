@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_IMAGE: esengendo730/sf-business-model
+  DOCKER_IMAGE: esengendo730/sanfrancisco_business_model
   DOCKER_PLATFORM: linux/amd64,linux/arm64
 
 jobs:

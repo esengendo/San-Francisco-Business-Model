@@ -1,11 +1,11 @@
 # San Francisco Business Success Prediction Platform
 
 [![CI/CD Pipeline](https://github.com/esengendo/San-Francisco-Business-Model/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/esengendo/San-Francisco-Business-Model/actions)
-[![Docker Image](https://img.shields.io/docker/pulls/esengendo730/sf-business-model.svg)](https://hub.docker.com/r/esengendo730/sf-business-model)
-[![Docker Image Size](https://img.shields.io/docker/image-size/esengendo730/sf-business-model/latest)](https://hub.docker.com/r/esengendo730/sf-business-model)
+[![Docker Image](https://img.shields.io/docker/pulls/esengendo730/sanfrancisco_business_model.svg)](https://hub.docker.com/r/esengendo730/sanfrancisco_business_model)
+[![Docker Image Size](https://img.shields.io/docker/image-size/esengendo730/sanfrancisco_business_model/latest)](https://hub.docker.com/r/esengendo730/sanfrancisco_business_model)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
-[![Platform](https://img.shields.io/badge/platform-linux%2Famd64%20%7C%20linux%2Farm64-lightgrey)](https://hub.docker.com/r/esengendo730/sf-business-model)
+[![Platform](https://img.shields.io/badge/platform-linux%2Famd64%20%7C%20linux%2Farm64-lightgrey)](https://hub.docker.com/r/esengendo730/sanfrancisco_business_model)
 
 **A production-ready deep learning solution for predicting 5-year business survival probability in San Francisco using multi-source data integration and PyTorch neural networks.**
 

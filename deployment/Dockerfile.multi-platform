@@ -1,85 +1,101 @@
-# Multi-Platform Optimized Dockerfile for SF Business Model
-# Supports: Mac M1/M2 (ARM64), Intel Mac (AMD64), Windows (WSL2)
-# Target: 2-3GB (vs current 4.84GB)
+# Ultra-Optimized Multi-Platform Dockerfile for SF Business Model
+# Targets: Mac M1/M2 (ARM64), Intel Mac (AMD64), Windows (WSL2)
+# Size Target: <1.5GB (from 4.84GB original)
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-FROM --platform=$TARGETPLATFORM python:3.11-slim as builder
 
-# Display build info
+# ============================================================================
+# Dependencies Stage - Build-only dependencies
+# ============================================================================
+FROM --platform=$TARGETPLATFORM python:3.11-slim as dependencies
+
 RUN echo "Building for $TARGETPLATFORM on $BUILDPLATFORM"
 
-# Install build dependencies (platform-aware)
-RUN apt-get update && apt-get install -y \
+# Install minimal build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc g++ \
-    wget curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install geospatial dependencies (lighter versions)
-RUN apt-get update && apt-get install -y \
-    libgdal-dev \
-    libproj-dev \
-    libgeos-dev \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install to user directory (more portable)
-COPY requirements-optimized.txt requirements.txt
-RUN pip install --user --no-cache-dir --upgrade pip
-RUN pip install --user --no-cache-dir -r requirements.txt
+# Copy and install Python dependencies to user directory
+COPY requirements-optimized.txt .
+RUN pip install --user --no-cache-dir --no-compile \
+    --disable-pip-version-check \
+    -r requirements-optimized.txt
 
-# Platform-specific PyTorch installation (smaller)
-RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-    pip install --user torch torchvision --index-url https://download.pytorch.org/whl/cpu; \
-elif [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-    pip install --user torch torchvision --index-url https://download.pytorch.org/whl/cpu; \
-fi
+# Remove pip cache and unnecessary files
+RUN find /root/.local -name "*.pyc" -delete \
+    && find /root/.local -name "__pycache__" -type d -exec rm -rf {} + \
+    && find /root/.local -name "*.pyo" -delete
 
 # ============================================================================
-# Runtime Stage - Minimal image for production
+# Production Stage - Ultra-minimal runtime
 # ============================================================================
-FROM --platform=$TARGETPLATFORM python:3.11-slim as runtime
+FROM --platform=$TARGETPLATFORM python:3.11-slim as production
 
-# Copy Python packages from builder
-COPY --from=builder /root/.local /root/.local
+# Copy Python packages from dependencies stage
+COPY --from=dependencies /root/.local /root/.local
 
-# Add local packages to PATH
-ENV PATH=/root/.local/bin:$PATH
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+# Install only essential runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/* \
+    && rm -rf /usr/share/doc/* \
+    && rm -rf /usr/share/man/* \
+    && rm -rf /usr/share/locale/*
+
+# Set optimized environment variables
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONOPTIMIZE=2 \
+    PIP_NO_CACHE_DIR=1 \
+    PATH=/root/.local/bin:$PATH \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_SERVER_ENABLE_CORS=false \
+    STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
+    STREAMLIT_SERVER_FILE_WATCHER_TYPE=none
+
+# Create application user for security
+RUN groupadd -r appuser && useradd -r -g appuser -s /bin/false appuser
 
 # Set working directory
 WORKDIR /app
 
-# Copy application files (in order of change frequency for better caching)
-COPY src/ ./src/
-COPY app/ ./app/
-COPY data/models/ ./data/models/
+# Copy only essential application files (optimized order for Docker layer caching)
+COPY --chown=appuser:appuser app/business_dashboard.py app/
+COPY --chown=appuser:appuser app/components/ app/components/
+COPY --chown=appuser:appuser app/utils/ app/utils/
 
-# Create minimal directory structure for runtime
-RUN mkdir -p data/cache logs
+# Create minimal required directories
+RUN mkdir -p /app/data/models /app/processed/final /app/logs \
+    && chown -R appuser:appuser /app
 
-# Create compatibility symlinks for legacy paths
-RUN mkdir -p San_Francisco_Business_Model && \
-    ln -s /app/data /app/San_Francisco_Business_Model/data && \
-    ln -s /app/data/models /app/San_Francisco_Business_Model/models
-
-# Set environment variables
-ENV BASE_DIR=/app
-ENV MODEL_DIR=/app/data/models
-ENV STREAMLIT_SERVER_PORT=8501
-ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+# Switch to non-root user
+USER appuser
 
 # Expose port
 EXPOSE 8501
 
-# Health check for container monitoring
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+# Optimized health check
+HEALTHCHECK --interval=60s --timeout=20s --start-period=120s --retries=2 \
+    CMD curl -f http://localhost:8501/_stcore/health > /dev/null 2>&1 || exit 1
 
-# Default command - optimized Streamlit app
-CMD ["streamlit", "run", "app/main.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true"]
+# Multi-platform optimized startup
+CMD ["python", "-m", "streamlit", "run", "app/business_dashboard.py", \
+     "--server.port=8501", \
+     "--server.address=0.0.0.0", \
+     "--server.maxUploadSize=10", \
+     "--server.maxMessageSize=50", \
+     "--logger.level=warning"]
