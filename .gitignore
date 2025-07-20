@@ -60,3 +60,18 @@ OPTIMIZATION_SUMMARY.md
 CLEANUP_SUMMARY.md
 IMPROVEMENTS_SUMMARY.md
 TEST_REPORT.md
+DOCKER_DEPLOYMENT.md
+
+# Lightning logs and training artifacts
+lightning_logs/
+*.log
+
+# Large/sensitive PDF files
+*.pdf
+
+# Heavy requirements files (keep optimized versions only)
+requirements.txt
+
+# Disabled/backup files
+*.disabled
+*_old.py
