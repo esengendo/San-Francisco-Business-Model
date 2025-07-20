@@ -71,6 +71,8 @@ lightning_logs/
 
 # Heavy requirements files (keep optimized versions only)
 requirements.txt
+requirements-quick.txt
+!requirements-optimized.txt
 
 # Disabled/backup files
 *.disabled
