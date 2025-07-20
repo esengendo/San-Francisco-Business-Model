@@ -50,6 +50,88 @@ streamlit run app/business_dashboard.py
 
 ## **Technical Architecture**
 
+### **System Architecture Overview**
+
+```mermaid
+graph TB
+    %% Data Sources Layer
+    subgraph "📊 Data Sources (13 APIs)"
+        FRED[FRED Economic Data]
+        CENSUS[US Census Bureau]
+        SFGOV[SF Gov Open Data]
+        OSM[OpenStreetMap]
+        GDELT[GDELT News Data]
+        OTHERS[8+ Other APIs]
+    end
+
+    %% Data Processing Layer
+    subgraph "⚙️ Data Processing Pipeline"
+        COLLECT[Data Collection<br/>13 API Scripts]
+        MERGE[Data Merging<br/>8 Integration Scripts]
+        FEATURES[Feature Engineering<br/>118 Features]
+    end
+
+    %% ML Model Layer
+    subgraph "🧠 Multi-Branch Neural Network"
+        SPATIAL[Spatial Branch<br/>5 Features]
+        TEMPORAL[Temporal Branch<br/>1 Feature]
+        BUSINESS[Business Branch<br/>112 Features]
+        FUSION[Fusion Layer<br/>Binary Output]
+    end
+
+    %% Application Layer
+    subgraph "🌐 Web Application"
+        STREAMLIT[Streamlit Dashboard]
+        COMPONENTS[Modular Components]
+    end
+
+    %% Deployment Layer
+    subgraph "🐳 Production Deployment"
+        DOCKER[Multi-Platform Docker<br/>ARM64 + AMD64]
+        CICD[GitHub Actions CI/CD]
+        REGISTRY[Docker Hub Registry]
+    end
+
+    %% Data Flow
+    FRED --> COLLECT
+    CENSUS --> COLLECT
+    SFGOV --> COLLECT
+    OSM --> COLLECT
+    GDELT --> COLLECT
+    OTHERS --> COLLECT
+
+    COLLECT --> MERGE
+    MERGE --> FEATURES
+    
+    FEATURES --> SPATIAL
+    FEATURES --> TEMPORAL
+    FEATURES --> BUSINESS
+    
+    SPATIAL --> FUSION
+    TEMPORAL --> FUSION
+    BUSINESS --> FUSION
+    
+    FUSION --> STREAMLIT
+    STREAMLIT --> COMPONENTS
+    
+    COMPONENTS --> DOCKER
+    DOCKER --> CICD
+    CICD --> REGISTRY
+
+    %% Styling
+    classDef dataSource fill:#e1f5fe
+    classDef processing fill:#f3e5f5
+    classDef model fill:#e8f5e8
+    classDef app fill:#fff3e0
+    classDef deploy fill:#fce4ec
+
+    class FRED,CENSUS,SFGOV,OSM,GDELT,OTHERS dataSource
+    class COLLECT,MERGE,FEATURES processing
+    class SPATIAL,TEMPORAL,BUSINESS,FUSION model
+    class STREAMLIT,COMPONENTS app
+    class DOCKER,CICD,REGISTRY deploy
+```
+
 ### **Machine Learning Model**
 - **Framework**: PyTorch Lightning with custom multi-branch neural architecture
 - **Features**: 118 engineered features (spatial, temporal, business, economic)
