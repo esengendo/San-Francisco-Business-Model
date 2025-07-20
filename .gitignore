@@ -60,6 +60,10 @@ CLEANUP_SUMMARY.md
 IMPROVEMENTS_SUMMARY.md
 TEST_REPORT.md
 DOCKER_DEPLOYMENT.md
+DOCKER_BUILD_STRATEGY.md
+GITHUB_ACTIONS_TEST_REPORT.md
+*_TEST_REPORT.md
+*_STRATEGY.md
 
 # Lightning logs and training artifacts
 lightning_logs/
@@ -82,3 +86,7 @@ Dockerfile.quick
 docker-compose.yml
 !deployment/Dockerfile.multi-platform
 !deployment/docker-compose.optimized.yml
+
+# Setup and utility scripts (not for production repos)
+setup_*.sh
+*_setup.sh
