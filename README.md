@@ -195,16 +195,42 @@ open http://localhost:8501
 ### **Development Setup**
 ```bash
 # Clone and setup
-git clone https://github.com/esengendo/sf-business-model.git
-cd sf-business-model
-pip install -r requirements.txt
+git clone https://github.com/esengendo/San-Francisco-Business-Model.git
+cd San-Francisco-Business-Model
+pip install -r requirements-optimized.txt
 
-# Launch application
+# Launch optimized application
+streamlit run app/main.py
+
+# Alternative: Legacy interface
 streamlit run app/app.py
 
 # Run full data pipeline (optional)
 python src/pipeline_runner.py
 ```
+
+---
+
+## **Performance Metrics**
+
+### **System Performance**
+- **Data Processing**: 250K+ business records
+- **Feature Engineering**: 118 features from 13 API sources
+- **Model Inference**: <100ms per prediction
+- **Container Size**: ~2-3GB (optimized from 4.84GB)
+- **Multi-Platform**: ARM64 + AMD64 architecture support
+
+### **Model Performance**
+- **Architecture**: Multi-branch neural network (PyTorch Lightning)
+- **Training**: Automated callbacks with early stopping
+- **Validation**: Cross-validation with temporal splits
+- **Monitoring**: Real-time performance tracking
+
+### **Infrastructure Metrics**
+- **Deployment**: Automated CI/CD with GitHub Actions
+- **Health Monitoring**: Built-in Streamlit health endpoints
+- **Scalability**: Containerized horizontal scaling ready
+- **Reliability**: Error handling and graceful degradation
 
 ---
 
