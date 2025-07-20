@@ -1,12 +1,37 @@
 # San Francisco Business Success Prediction Platform
 
+[![CI/CD Pipeline](https://github.com/esengendo/San-Francisco-Business-Model/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/esengendo/San-Francisco-Business-Model/actions)
+[![Docker Image](https://img.shields.io/docker/pulls/esengendo730/sf-business-model.svg)](https://hub.docker.com/r/esengendo730/sf-business-model)
+[![Docker Image Size](https://img.shields.io/docker/image-size/esengendo730/sf-business-model/latest)](https://hub.docker.com/r/esengendo730/sf-business-model)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org)
+[![Platform](https://img.shields.io/badge/platform-linux%2Famd64%20%7C%20linux%2Farm64-lightgrey)](https://hub.docker.com/r/esengendo730/sf-business-model)
+
 **A production-ready deep learning solution for predicting 5-year business survival probability in San Francisco using multi-source data integration and PyTorch neural networks.**
 
 ## 🚀 **Quick Demo**
+
+### Docker Deployment (Recommended)
 ```bash
+# Quick start - latest stable version
 docker run -p 8501:8501 esengendo730/sf-business-model:latest
+
+# Multi-platform support (AMD64 + ARM64)
+docker run --platform linux/amd64 -p 8501:8501 esengendo730/sf-business-model:latest
 ```
-**Access**: http://localhost:8501
+
+### Local Development
+```bash
+# Clone and setup
+git clone https://github.com/esengendo/San-Francisco-Business-Model.git
+cd San-Francisco-Business-Model
+pip install -r requirements.txt
+
+# Launch business intelligence dashboard
+streamlit run app/business_dashboard.py
+```
+
+**🌐 Access**: http://localhost:8501
 
 ---
 
@@ -97,6 +122,32 @@ streamlit run app/app.py
 
 # Run full data pipeline (optional)
 python src/pipeline_runner.py
+```
+
+---
+
+## 🚀 **CI/CD & Deployment**
+
+### Automated Deployments
+- **🔄 Continuous Integration**: Automated testing on every push
+- **🐳 Docker Hub**: Multi-platform images (AMD64 + ARM64) 
+- **📅 Monthly Maintenance**: Dependency updates and security scans (First Sunday of each month)
+- **🔒 Security Scanning**: Vulnerability assessment with Trivy
+- **⚡ Health Monitoring**: Automated endpoint testing
+
+### Docker Hub Repository
+- **Image**: [`esengendo730/sf-business-model`](https://hub.docker.com/r/esengendo730/sf-business-model)
+- **Tags**: `latest`, `main-{sha}`, `{YYYYMMDD}` (monthly builds)
+- **Platforms**: `linux/amd64`, `linux/arm64`
+- **Automated Builds**: Triggered on push to main branch
+
+### CI/CD Workflows
+```bash
+# Manual deployment trigger
+gh workflow run "CI/CD Pipeline"
+
+# Monthly maintenance (auto-scheduled)
+gh workflow run "Monthly Maintenance"
 ```
 
 ---
