@@ -332,19 +332,51 @@ sf-business-model/
 
 #### **4. GDELT Project (Global Events Database)**
 - **Base URL**: `https://api.gdeltproject.org`
+- **API Endpoints**:
+  - Document Search: `https://api.gdeltproject.org/api/v2/doc/doc`
+  - Geographic Search: `https://api.gdeltproject.org/api/v2/geo/geo`
+  - TV Search: `https://api.gdeltproject.org/api/v2/tv/tv`
+- **Frontend**: `https://www.gdeltproject.org/search/results.php`
+- **Authentication**: None required (public API)
 - **Data Types**: News sentiment, economic sentiment, global events
 - **Innovation**: Novel sentiment integration for business prediction accuracy
 - **Usage**: Market trend analysis and sentiment-based forecasting
 
-#### **5. OpenStreetMap & Geographic Data**
+#### **5. Wayback Machine (Internet Archive)**
+- **Base URL**: `http://web.archive.org`
+- **API Endpoints**:
+  - CDX Search: `http://web.archive.org/cdx/search/cdx`
+  - Wayback URLs: `http://web.archive.org/web/{timestamp}/{original_url}`
+- **Authentication**: None required (public API)
+- **Data Types**: Historical business presence validation
+- **Usage**: Data quality verification, temporal consistency checks, historical validation
+
+#### **6. OpenStreetMap & Geographic Data**
 - **Sources**: OpenStreetMap API, Geospatial intelligence
 - **Data Types**: Points of interest, transportation, infrastructure
 - **Usage**: Location-based business environment assessment
 
-#### **6. Local News & Market Intelligence**
-- **Sources**: SF Chronicle, SFGate, KQED, SF Business Times RSS feeds
+#### **7. Local News & Market Intelligence**
+- **Primary RSS Feeds**:
+  - SF Chronicle: `https://www.sfchronicle.com/feed/feed.xml`
+  - SFGate: `https://www.sfgate.com/bayarea/feed/Bay-Area-News-429.php`
+  - KQED: `https://ww2.kqed.org/news/feed/`
+  - SF Business Times: `https://www.bizjournals.com/sanfrancisco/news/rss.xml`
+  - SF Examiner: `https://www.sfexaminer.com/news/feed/`
+  - Mission Local: `https://missionlocal.org/feed/`
+  - Hoodline: `https://hoodline.com/rss/all.xml`
 - **Data Types**: Local business news, market conditions, community updates
 - **Usage**: Real-time market intelligence and community impact analysis
+
+#### **8. GDELT News Source Integration**
+- **Monitored Domains**: 
+  - `sfgate.com` - Regional business coverage
+  - `sfchronicle.com` - Major metropolitan news
+  - `bizjournals.com/sanfrancisco` - Business-focused reporting
+  - `techcrunch.com` - Technology sector intelligence
+  - `sfexaminer.com` - Local community news
+- **Integration**: GDELT Project aggregates sentiment from these sources
+- **Usage**: Advanced sentiment analysis for business environment assessment
 
 ### **Integration Summary**
 - **Total Sources**: 13 integrated APIs and data feeds
