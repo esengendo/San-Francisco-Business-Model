@@ -312,25 +312,25 @@ sf-business-model/
 
 ### **Primary Data Sources**
 
-#### **1. San Francisco Open Data (Socrata)**
+#### **San Francisco Open Data (Socrata)**
 - **Base URL**: `https://data.sfgov.org`
 - **Data Types**: Business registrations, crime statistics, planning permits, service requests
 - **Key Endpoints**: Business registrations (`g8m3-pdis.json`), crime data, SF311 services
 - **Usage**: Core business intelligence and regulatory environment analysis
 
-#### **2. FRED Economic Data (Federal Reserve)**
+#### **FRED Economic Data (Federal Reserve)**
 - **Base URL**: `https://api.stlouisfed.org`
 - **Data Types**: GDP, unemployment rates, housing prices, economic indicators
 - **Key Series**: SF GDP (NGMP41860), Unemployment (SANF806UR), Housing Index (SFXRSA)
 - **Usage**: Economic context and temporal feature engineering
 
-#### **3. U.S. Census Bureau**
+#### **U.S. Census Bureau**
 - **Base URL**: `https://api.census.gov`
 - **Data Types**: Demographics, population, income, education statistics
 - **Key Datasets**: ACS 5-Year Estimates, Population Estimates
 - **Usage**: Demographic intelligence and neighborhood analysis
 
-#### **4. GDELT Project (Global Events Database)**
+#### **GDELT Project (Global Events Database)**
 - **Base URL**: `https://api.gdeltproject.org`
 - **API Endpoints**:
   - Document Search: `https://api.gdeltproject.org/api/v2/doc/doc`
@@ -342,7 +342,7 @@ sf-business-model/
 - **Innovation**: Novel sentiment integration for business prediction accuracy
 - **Usage**: Market trend analysis and sentiment-based forecasting
 
-#### **5. Wayback Machine (Internet Archive)**
+#### **Wayback Machine (Internet Archive)**
 - **Base URL**: `http://web.archive.org`
 - **API Endpoints**:
   - CDX Search: `http://web.archive.org/cdx/search/cdx`
@@ -351,12 +351,12 @@ sf-business-model/
 - **Data Types**: Historical business presence validation
 - **Usage**: Data quality verification, temporal consistency checks, historical validation
 
-#### **6. OpenStreetMap & Geographic Data**
+#### **OpenStreetMap & Geographic Data**
 - **Sources**: OpenStreetMap API, Geospatial intelligence
 - **Data Types**: Points of interest, transportation, infrastructure
 - **Usage**: Location-based business environment assessment
 
-#### **7. Local News & Market Intelligence**
+#### **Local News & Market Intelligence**
 - **Primary RSS Feeds**:
   - SF Chronicle: `https://www.sfchronicle.com/feed/feed.xml`
   - SFGate: `https://www.sfgate.com/bayarea/feed/Bay-Area-News-429.php`
@@ -368,7 +368,7 @@ sf-business-model/
 - **Data Types**: Local business news, market conditions, community updates
 - **Usage**: Real-time market intelligence and community impact analysis
 
-#### **8. GDELT News Source Integration**
+#### **GDELT News Source Integration**
 - **Monitored Domains**: 
   - `sfgate.com` - Regional business coverage
   - `sfchronicle.com` - Major metropolitan news
