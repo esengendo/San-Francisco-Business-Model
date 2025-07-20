@@ -20,8 +20,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy requirements and install Python packages
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements-optimized.txt .
+RUN pip install --no-cache-dir -r requirements-optimized.txt
 
 # Force reinstall numpy<2 to avoid compatibility issues
 RUN pip install "numpy<2" --force-reinstall
