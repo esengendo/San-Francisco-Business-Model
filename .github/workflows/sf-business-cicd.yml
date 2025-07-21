@@ -33,7 +33,7 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-optimized.txt
 
       - name: 🔍 Code quality tests
         run: |
@@ -89,6 +89,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./deployment/Dockerfile.multi-platform
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
