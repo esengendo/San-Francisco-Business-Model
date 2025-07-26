@@ -249,6 +249,34 @@ def show_business_predictor(model, model_config, preprocessing_info):
     with tab7:
         show_risk_analysis()
 
+def get_neighborhood_coordinates():
+    """Get neighborhood to coordinates mapping"""
+    # Common SF neighborhoods with approximate coordinates
+    return {
+        "Financial District/South Beach": (37.7946, -122.3999),
+        "Mission": (37.7599, -122.4148),
+        "Castro/Upper Market": (37.7609, -122.4350),
+        "Haight Ashbury": (37.7693, -122.4489),
+        "Hayes Valley": (37.7749, -122.4264),
+        "North Beach": (37.8056, -122.4103),
+        "Chinatown": (37.7941, -122.4078),
+        "Union Square": (37.7880, -122.4074),
+        "SoMa": (37.7749, -122.4194),
+        "Nob Hill": (37.7946, -122.4140),
+        "Russian Hill": (37.8014, -122.4161),
+        "Pacific Heights": (37.7930, -122.4378),
+        "Marina District": (37.8021, -122.4416),
+        "Richmond": (37.7806, -122.4664),
+        "Sunset": (37.7436, -122.4814),
+        "Bernal Heights": (37.7441, -122.4156),
+        "Potrero Hill": (37.7578, -122.3972),
+        "Dogpatch": (37.7578, -122.3889),
+        "Bayview Hunters Point": (37.7272, -122.3831),
+        "Excelsior": (37.7249, -122.4261),
+        "Glen Park": (37.7338, -122.4336),
+        "Other/Custom Coordinates": (37.7749, -122.4194)
+    }
+
 def show_business_prediction_interface(model, model_config, preprocessing_info):
     """Interactive business prediction interface"""
     col1, col2 = st.columns([1, 1])
@@ -260,23 +288,60 @@ def show_business_prediction_interface(model, model_config, preprocessing_info):
         with st.form("business_form"):
             business_name = st.text_input("Business Name", placeholder="e.g., Castro Coffee House")
             
-            col_a, col_b = st.columns(2)
-            with col_a:
-                latitude = st.number_input("Latitude", min_value=37.70, max_value=37.85, value=37.7749, step=0.0001)
-                industry = st.selectbox("Industry Type", [
-                    "Restaurant/Food Service",
-                    "Retail Trade", 
-                    "Professional Services",
-                    "Healthcare",
-                    "Technology",
-                    "Real Estate",
-                    "Arts & Entertainment",
-                    "Other"
-                ])
+            # Location input method selection
+            location_method = st.radio(
+                "Location Input Method:",
+                ["Select Neighborhood", "Enter Coordinates"],
+                horizontal=True
+            )
             
-            with col_b:
-                longitude = st.number_input("Longitude", min_value=-122.55, max_value=-122.35, value=-122.4194, step=0.0001)
-                start_date = st.date_input("Planned Start Date")
+            col_a, col_b = st.columns(2)
+            
+            # Get neighborhood coordinates mapping
+            neighborhoods = get_neighborhood_coordinates()
+            
+            if location_method == "Select Neighborhood":
+                with col_a:
+                    selected_neighborhood = st.selectbox(
+                        "Neighborhood", 
+                        list(neighborhoods.keys()),
+                        index=8  # Default to SoMa
+                    )
+                    latitude, longitude = neighborhoods[selected_neighborhood]
+                    st.caption(f"📍 Coordinates: {latitude:.4f}, {longitude:.4f}")
+                    
+                    industry = st.selectbox("Industry Type", [
+                        "Restaurant/Food Service",
+                        "Retail Trade", 
+                        "Professional Services",
+                        "Healthcare",
+                        "Technology",
+                        "Real Estate",
+                        "Arts & Entertainment",
+                        "Other"
+                    ])
+                
+                with col_b:
+                    st.write("")  # Spacer
+                    st.write("")  # Spacer  
+                    start_date = st.date_input("Planned Start Date")
+            else:
+                with col_a:
+                    latitude = st.number_input("Latitude", min_value=37.70, max_value=37.85, value=37.7749, step=0.0001)
+                    industry = st.selectbox("Industry Type", [
+                        "Restaurant/Food Service",
+                        "Retail Trade", 
+                        "Professional Services",
+                        "Healthcare",
+                        "Technology",
+                        "Real Estate",
+                        "Arts & Entertainment",
+                        "Other"
+                    ])
+                
+                with col_b:
+                    longitude = st.number_input("Longitude", min_value=-122.55, max_value=-122.35, value=-122.4194, step=0.0001)
+                    start_date = st.date_input("Planned Start Date")
             
             submitted = st.form_submit_button("🔮 **Predict Success Probability**")
         
