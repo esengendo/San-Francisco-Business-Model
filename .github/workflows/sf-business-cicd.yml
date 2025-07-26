@@ -63,16 +63,10 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: 🔍 Debug Docker login
+      - name: 🔍 Verify Docker setup
         run: |
-          echo "Username exists: ${{ secrets.DOCKERHUB_USERNAME != '' }}"
-          echo "Token exists: ${{ secrets.DOCKERHUB_TOKEN != '' }}"
-          echo "Username (partial): ${{ secrets.DOCKERHUB_USERNAME }}"
-          docker --version
-          echo "Attempting manual docker login test..."
+          echo "Docker version: $(docker --version)"
+          echo "✅ Docker setup complete"
           
       - name: 🔑 Log in to Docker Hub
         uses: docker/login-action@v3
@@ -96,13 +90,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./deployment/Dockerfile.multi-platform
-          platforms: linux/amd64
+          file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: 🎉 Deployment Summary
         run: |
