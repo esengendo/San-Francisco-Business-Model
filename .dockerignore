@@ -115,7 +115,8 @@ htmlcov/
 *.pkl
 *.csv
 # Allow essential parquet files only
-# *.parquet
+# *.parquet (commented out to allow land_use_fallback.parquet)
+!land_use_fallback.parquet
 
 # Cache files
 cache/
