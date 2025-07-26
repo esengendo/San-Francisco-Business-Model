@@ -6,6 +6,7 @@ import signal
 import logging
 from datetime import datetime
 import json
+from dotenv import load_dotenv
 
 
 class TimeoutError(Exception):
@@ -18,6 +19,9 @@ def timeout_handler(signum, frame):
 
 class ResilientPipelineRunner:
     def __init__(self, timeout_minutes=120):  # 2 hour default timeout
+        # Load environment variables from .env file
+        load_dotenv()
+        
         self.timeout_seconds = timeout_minutes * 60
         self.results = []
         self.start_time = datetime.now()
@@ -124,10 +128,41 @@ class ResilientPipelineRunner:
 
         return result
 
+    def discover_pipeline_scripts(self):
+        """Dynamically discover all pipeline scripts from their proper locations"""
+        import glob
+        import re
+        
+        script_mapping = {}
+        
+        # Define the search directories and their script patterns
+        search_patterns = [
+            ("src/utils", ["*_0[1-3].py"]),  # 01-03: setup and validation
+            ("src/data_collection", ["*_0[4-9].py", "*_1[0-3].py"]),  # 04-13: data collection
+            ("src/processing", ["*_1[4-9].py", "*_2[0-3].py"]),  # 14-23: processing and merging
+            ("src/models", ["*_2[4-9].py"]),  # 24+: model training
+        ]
+        
+        for directory, patterns in search_patterns:
+            for pattern in patterns:
+                search_path = os.path.join(directory, pattern)
+                found_files = glob.glob(search_path)
+                for file_path in found_files:
+                    # Extract the number from filename
+                    filename = os.path.basename(file_path)
+                    match = re.search(r'_(\d+)\.py$', filename)
+                    if match:
+                        number = int(match.group(1))
+                        script_mapping[number] = file_path
+        
+        # Return scripts sorted by number
+        sorted_scripts = [script_mapping[key] for key in sorted(script_mapping.keys())]
+        return sorted_scripts
+
     def run_pipeline(self, continue_on_failure=True, script_timeout_minutes=None):
         """Run the entire pipeline with resilience features"""
 
-        # Custom timeouts for known slow scripts
+        # Custom timeouts for known slow scripts (using basename for matching)
         script_timeouts = {
             "wayback_historical_data_13.py": 45,  # 45 mins for wayback
             "sf_business_data_04.py": 30,  # 30 minutes for business data
@@ -137,41 +172,10 @@ class ResilientPipelineRunner:
             "model_training_with_save_load_24.py": 60,  # 60 minutes for model training
         }
 
-        # Get all Python scripts in current directory
-        scripts = [
-            # 1. Setup and validation
-            "api_keys_validation_01.py",
-            "logging_config_setup_02.py",
-            "helper_functions_03.py",
-            # 2. Raw data collection (must run before processing)
-            "sf_business_data_04.py",  # Creates raw business data
-            "fred_economic_data_05.py",
-            "census_demographic_data_06.py",
-            "sf_planning_data_07.py",
-            "sf_crime_data_08.py",
-            "sf311_data_09.py",
-            "osm_business_data_10.py",
-            "gdelt_news_data_11.py",
-            "sf_news_rss_data_12.py",
-            "wayback_historical_data_13.py",
-            # 3. Data processing (must run after raw data collection)
-            "file_combination_cleanup_14.py",
-            "business_data_processing_15.py",  # Processes raw business data
-            # 4. Data integration/merging (must run after processing)
-            "business_analysis_merge_16.py",  # Needs processed business data
-            "osm_enrichment_merge_17.py",
-            "land_use_integration_merge_18.py",
-            "permits_integration_merge_19.py",
-            "sf311_integration_merge_20.py",
-            "crime_integration_merge_21.py",
-            "news_integration_merge_22.py",
-            # 5. Pre-modeling (final step)
-            "premodeling_pipeline_23.py",
-            # 6. Model Training (FINAL STEP - trains the actual ML model)
-            "model_training_with_save_load_24.py",
-        ]
-
-        # Only include scripts that actually exist
+        # Dynamically discover all pipeline scripts
+        scripts = self.discover_pipeline_scripts()
+        
+        # Filter to only existing scripts (double-check)
         scripts = [script for script in scripts if os.path.exists(script)]
 
         self.logger.info(
@@ -190,8 +194,9 @@ class ResilientPipelineRunner:
         for i, script in enumerate(scripts, 1):
             script_start_time = datetime.now()
 
-            # Determine timeout for this script
-            timeout_minutes = script_timeouts.get(script, script_timeout_minutes or 120)
+            # Determine timeout for this script (use basename for lookup)
+            script_basename = os.path.basename(script)
+            timeout_minutes = script_timeouts.get(script_basename, script_timeout_minutes or 120)
             timeout_seconds = timeout_minutes * 60
 
             self.logger.info(
@@ -200,7 +205,7 @@ class ResilientPipelineRunner:
 
             try:
                 # Run script with retry logic (except for very slow scripts)
-                if script in ["wayback_historical_data_13.py"]:
+                if script_basename in ["wayback_historical_data_13.py"]:
                     # Don't retry very slow scripts
                     result = self.run_script_with_timeout(script, timeout_seconds)
                 else:
@@ -290,7 +295,8 @@ class ResilientPipelineRunner:
         self.logger.info(f"Scripts processed: {total_scripts}")
         self.logger.info(f"✅ Successful: {successful_scripts}")
         self.logger.info(f"❌ Failed: {failed_scripts}")
-        self.logger.info(f"Success rate: {(successful_scripts/total_scripts)*100:.1f}%")
+        success_rate = (successful_scripts/total_scripts)*100 if total_scripts > 0 else 0
+        self.logger.info(f"Success rate: {success_rate:.1f}%")
 
         # Detailed results
         self.logger.info("\nDETAILED RESULTS:")

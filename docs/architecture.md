@@ -64,7 +64,7 @@ graph TB
     %% Deployment Layer
     subgraph "🐳 Deployment & Infrastructure"
         DOCKER[Multi-Platform Docker<br/>ARM64 + AMD64]
-        GITHUB[GitHub Actions CI/CD]
+        DOCKER_BUILD[Docker Build Process]
         DOCKERHUB[Docker Hub Registry]
         HEALTH[Health Monitoring]
     end
@@ -167,7 +167,7 @@ Input Features (118)
 - **Deployment**: Multi-platform Docker (ARM64 + AMD64)
 
 ### 5. **Production Infrastructure**
-- **CI/CD**: GitHub Actions automated workflows
+- **Deployment**: Docker automated workflows
 - **Containerization**: Optimized multi-stage Docker builds
 - **Registry**: Docker Hub with multi-platform support
 - **Monitoring**: Health checks and automated testing

@@ -1,6 +1,5 @@
 # San Francisco Business Success Prediction Platform
 
-[![CI/CD Pipeline](https://github.com/esengendo/San-Francisco-Business-Model/workflows/SF%20Business%20Model%20-%20Complete%20CI/CD%20Pipeline/badge.svg)](https://github.com/esengendo/San-Francisco-Business-Model/actions)
 [![Docker Image](https://img.shields.io/docker/pulls/esengendo730/sf-business-model.svg)](https://hub.docker.com/r/esengendo730/sf-business-model)
 [![Docker Image Size](https://img.shields.io/docker/image-size/esengendo730/sf-business-model/latest)](https://hub.docker.com/r/esengendo730/sf-business-model)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -88,7 +87,6 @@ graph TB
     %% Deployment Layer
     subgraph "🐳 Production Deployment"
         DOCKER[Multi-Platform Docker<br/>ARM64 + AMD64]
-        CICD[GitHub Actions CI/CD]
         REGISTRY[Docker Hub Registry]
     end
 
@@ -161,7 +159,7 @@ graph TB
 - **ML**: PyTorch Lightning, Scikit-learn, NumPy/Pandas
 - **Web App**: Streamlit with Plotly visualizations  
 - **Data**: 13 REST APIs, Parquet storage format
-- **Deployment**: Docker containerization with CI/CD
+- **Deployment**: Docker containerization
 
 **Production Features**:
 - Containerized deployment with health checks
@@ -227,36 +225,28 @@ python src/pipeline_runner.py
 - **Monitoring**: Real-time performance tracking
 
 ### **Infrastructure Metrics**
-- **Deployment**: Automated CI/CD with GitHub Actions
+- **Deployment**: Docker containerization with automated builds
 - **Health Monitoring**: Built-in Streamlit health endpoints
 - **Scalability**: Containerized horizontal scaling ready
 - **Reliability**: Error handling and graceful degradation
 
 ---
 
-## 🚀 **CI/CD & Deployment**
+## 🚀 **Docker Deployment**
 
-### Automated Deployments
-- **🔄 Continuous Integration**: Automated testing on every push
-- **🐳 Docker Hub**: Multi-platform images (AMD64 + ARM64) 
-- **📅 Monthly Maintenance**: Dependency updates and security scans (First Sunday of each month)
-- **🔒 Security Scanning**: Vulnerability assessment with Trivy
-- **⚡ Health Monitoring**: Automated endpoint testing
+### Quick Deployment
+```bash
+# Quick Docker deployment
+docker run -p 8501:8501 esengendo730/sf-business-model:latest
+
+# Production stack
+docker-compose -f deployment/docker-compose.optimized.yml --profile production up
+```
 
 ### Docker Hub Repository
 - **Image**: [`esengendo730/sf-business-model`](https://hub.docker.com/r/esengendo730/sf-business-model)
-- **Tags**: `latest`, `main-{sha}`, `{YYYYMMDD}` (monthly builds)
 - **Platforms**: `linux/amd64`, `linux/arm64`
-- **Automated Builds**: Triggered on push to main branch
-
-### CI/CD Workflows
-```bash
-# Manual deployment trigger
-gh workflow run "CI/CD Pipeline"
-
-# Monthly maintenance (auto-scheduled)
-gh workflow run "Monthly Maintenance"
-```
+- **Health Monitoring**: Integrated endpoint testing
 
 ---
 
@@ -283,7 +273,7 @@ sf-business-model/
 
 ---
 
-**Status**: ✅ Production-ready with automated CI/CD, Docker deployment, and comprehensive testing
+**Status**: ✅ Production-ready with Docker deployment and comprehensive testing
 
 ---
 
@@ -302,7 +292,7 @@ sf-business-model/
 ## 🧪 **Testing & Quality Assurance**
 
 **Automated Testing**: Complete test suite with 34+ unit tests covering pipeline components and dashboard functionality
-**CI/CD Pipeline**: Automated testing, building, and deployment on every push to main branch
+**Docker Deployment**: Containerized deployment with health monitoring
 **Security Scanning**: Trivy vulnerability scanning and GitHub secret detection
 **Health Monitoring**: Automated endpoint testing and container health checks
 

@@ -14,8 +14,9 @@ from helper_functions_03 import save_to_parquet
 # ADD after existing imports:
 import sys
 if __name__ == "__main__":
-    project_root = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     sys.path.insert(0, project_root)
+    sys.path.insert(0, os.path.join(project_root, "src", "utils"))
 from config import setup_logging, setup_directories
 
 # Setup logging
